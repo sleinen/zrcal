@@ -1,0 +1,5 @@
+indexes:
+- kind: Abfuhr
+  properties:
+  - name: zip
+  - name: date
