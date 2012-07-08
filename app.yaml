@@ -6,13 +6,20 @@ threadsafe: true
 
 libraries:
 - name: lxml
-  version: 2.3
+  version: "2.3"
+- name: jinja2
+  version: "2.6"
+- name: markupsafe
+  version: "0.15"
 
 handlers:
 - url: /(favicon.ico)
   static_files: static/images/\1
   mime_type: image/vnd.microsoft.icon
   upload: static/images/(.*)
+
+- url: /css
+  static_dir: css
 
 - url: /.*
   script: zrcal.app

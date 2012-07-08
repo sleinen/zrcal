@@ -13,6 +13,12 @@ from google.appengine.ext import db
 from google.appengine.ext.webapp.util import run_wsgi_app
 import icalendar
 from bs4 import BeautifulSoup
+import jinja2
+
+zips = [8001, 8002, 8003, 8004, 8005, 8006, 8008,
+        8032, 8037, 8038, 8041, 8044, 8045, 8046,
+        8047, 8048, 8049, 8050, 8051, 8052, 8053,
+        8055, 8057, 8064]
 
 class Abfuhr(db.Model):
     zip = db.IntegerProperty(required=True)
@@ -50,6 +56,8 @@ class OGDZMetaPage(db.Model):
                        contents = urllib2.urlopen(url).read())
             meta.put()
             return meta.contents
+
+env = jinja2.Environment(loader=jinja2.PackageLoader('zrcal', 'templates'))
 
 def meta_url(type):
     return 'http://data.stadt-zuerich.ch/portal/de/index/ogd/daten/entsorgungskalender_%s.html' % type
@@ -103,20 +111,8 @@ def month_for_name_de(name):
 
 class MainPage(webapp2.RequestHandler):
     def get(self):
-        self.response.out.write('<html><body>')
-        for type in known_types:
-            self.response.out.write('<a href="%s">%s</a><br />'
-                                    % (meta_url(type), type))
-        self.response.out.write('</body></html>')
-
-class GetCalPage(webapp2.RequestHandler):
-    def get(self):
-        zip = 8044
-        self.response.out.write('<html><body>')
-        for ret in db.GqlQuery('SELECT * from Abfuhr ' 'WHERE zip = :1 ', zip):
-            self.response.out.write(str(ret.date) + ": " + str(ret.type)
-                                    + '<br />')
-        self.response.out.write('</body></html>')
+        template = env.get_template('index.html')
+        self.response.out.write(template.render(zips=zips))
 
 class GetCal(webapp2.RequestHandler):
     def get(self, zip=None, types=None):
@@ -208,7 +204,5 @@ app = webapp2.WSGIApplication([
         webapp2.Route('/<zip:\d{4}>/<types:.*>', handler=GetCal, name='ical'),
         ('/', MainPage),
         ('/load-calendar', LoadCalendarPage),
-        ('/getcal', GetCalPage),
-        ('/geticalendar', GetCal),
         ('/meta-page', GetMeta),
         ], debug=True)
