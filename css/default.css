@@ -1,4 +1,4 @@
-body { line-height:1.5; font-family:"Arial", sans-serif; }
+body { line-height:1.5; font-family:"Droid Sans", "Helvetica", "Arial", sans-serif; }
 ul{
   width:760px;
   margin-bottom:20px;
@@ -15,3 +15,4 @@ li{
 #triple li  { width:33.333%; } /* 3 col */
 #quad li    { width:25%; } /* 4 col */
 #six li     { width:16.666%; } /* 6 col */
+#footer { font-size:66%; }

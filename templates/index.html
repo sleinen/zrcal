@@ -1,29 +1,13 @@
-<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
-<html> <head>
-    <meta charset="utf-8" />
-    <link rel="stylesheet" type="text/css" href="/css/default.css" />
-    <title>zrcal</title>
-</head>
+{% extends "base.html" %}
+{% block title %}zrcal{% endblock %}
+{% block content %}
+<h1>{{ gettext('Recycling-Kalender') }} Zürich</h1>
 
-<body>
-<h1>Recycling-Kalender Zürich</h1>
-
-<h2> iCalendar links </h2>
+<h2> Live-Kalender </h2>
 
 <ul id="triple">
 {% for zip in zips %}
   <li><a href="/{{ zip }}">{{ zip }}</a></li>
 {% endfor %}
 </ul>
-
-<!-- hhmts start -->
-2012/07/09  0:51:20
-<!-- hhmts end -->
-<address>
-
- <a href="http://www.switch.ch/misc/leinen/">
-  Simon Leinen &lt;simon@leinen.ch&gt;
- </a>
-</address>
-
-</body> </html>
+{% endblock %}

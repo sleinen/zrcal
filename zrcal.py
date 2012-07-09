@@ -8,17 +8,26 @@ import urllib2
 import wsgiref.handlers
 import re
 import csv
+import os
 import webapp2
 from google.appengine.ext import db
 from google.appengine.ext.webapp.util import run_wsgi_app
 import icalendar
 from bs4 import BeautifulSoup
+from django.conf import settings
+from django.utils import translation
 import jinja2
+env = jinja2.Environment(loader=jinja2.PackageLoader('zrcal', 'templates'),
+                         extensions=['jinja2.ext.i18n'])
+env.install_gettext_translations(translation, newstyle=True)
 
 zips = [8001, 8002, 8003, 8004, 8005, 8006, 8008,
         8032, 8037, 8038, 8041, 8044, 8045, 8046,
         8047, 8048, 8049, 8050, 8051, 8052, 8053,
         8055, 8057, 8064]
+
+ga_id = 'UA-33259788-1'
+google_ad_client = 'ca-pub-6118177449333262'
 
 class Abfuhr(db.Model):
     zip = db.IntegerProperty(required=True)
@@ -56,8 +65,6 @@ class OGDZMetaPage(db.Model):
                        contents = urllib2.urlopen(url).read())
             meta.put()
             return meta.contents
-
-env = jinja2.Environment(loader=jinja2.PackageLoader('zrcal', 'templates'))
 
 def meta_url(type):
     return 'http://data.stadt-zuerich.ch/portal/de/index/ogd/daten/entsorgungskalender_%s.html' % type
@@ -112,7 +119,9 @@ def month_for_name_de(name):
 class MainPage(webapp2.RequestHandler):
     def get(self):
         template = env.get_template('index.html')
-        self.response.out.write(template.render(zips=zips))
+        self.response.out.write(template.render(zips=zips,
+                                                ga_id=ga_id,
+                                                google_ad_client=google_ad_client))
 
 class GetCal(webapp2.RequestHandler):
     def get(self, zip=None, types=None):

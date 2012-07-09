@@ -1,0 +1,46 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html lang="en">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    {% block head %}
+    <meta charset="utf-8" />
+    <link rel="stylesheet" type="text/css" href="/css/default.css" />
+    <title>{% block title %}{% endblock %}</title>
+    {% if ga_id != None: %}
+    <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', '{{ ga_id }}']);
+      _gaq.push(['_trackPageview']);
+    
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+    </script>
+    {% endif %}
+    {% endblock %}
+</head>
+<body>
+    <div id="content">{% block content %}{% endblock %}</div>
+{% if google_ad_client != None %}
+    </div id="footer_ad">
+<script type="text/javascript"><!--
+google_ad_client = "{{ google_ad_client }}";
+/* related */
+google_ad_slot = "9845577265";
+google_ad_width = 468;
+google_ad_height = 15;
+//-->
+</script>
+<script type="text/javascript" src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
+</script>
+    </div>
+{% endif %}
+    <div id="footer">
+        {% block footer %}
+        &copy; Copyright 2012 by <a href="http://simon.leinen.ch/">Simon Leinen</a>.
+        {% endblock %}
+    </div>
+</body>
+</html>
