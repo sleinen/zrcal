@@ -17,6 +17,8 @@ from bs4 import BeautifulSoup
 from django.conf import settings
 from django.utils import translation
 import jinja2
+import logging
+
 env = jinja2.Environment(loader=jinja2.PackageLoader('zrcal', 'templates'),
                          extensions=['jinja2.ext.i18n'])
 env.install_gettext_translations(translation, newstyle=True)
@@ -99,22 +101,28 @@ def type_to_csv_url(type):
     return 'http://data.stadt-zuerich.ch/ogd.%s.link' % type_to_tag[type]
 
 month_for_name_de_dict = dict({
-        'Januar':	 1,
-        'Februar':	 2,
-        'März':		 3,
-        'April':	 4,
-        'Mai':		 5,
-        'Juni':		 6,
-        'Juli':		 7,
-        'August':	 8,
-        'September':	 9,
-        'Oktober':	10,
-        'November':	11,
-        'Dezember':	12,
+        "Januar":	 1,
+        "Februar":	 2,
+        "März":		 3,
+        "April":	 4,
+        "Mai":		 5,
+        "Juni":		 6,
+        "Juli":		 7,
+        "August":	 8,
+        "September":	 9,
+        "Oktober":	10,
+        "November":	11,
+        "Dezember":	12,
 })
 
 def month_for_name_de(name):
-    return month_for_name_de_dict[name]
+    try:
+        return month_for_name_de_dict[name]
+    except KeyError:
+        logging.error("Unknown month %s (%s), assuming this means March."
+                      % (name,
+                         ":".join("{0:x}".format(ord(c)) for c in name)))
+        return 3
 
 class MainPage(webapp2.RequestHandler):
     def get(self):
@@ -179,15 +187,17 @@ def iso_8859_1_utf_8_transcoder(unicode_csv_data):
 
 def parse_abhol_csv(type):
     url = type_to_csv_url(type)
-    db.delete(db.GqlQuery("SELECT * FROM Abfuhr WHERE type = :1", type))
     r = iso_8859_1_csv_reader(urllib2.urlopen(url), dialect='excel', )
+    db.delete(db.GqlQuery("SELECT * FROM Abfuhr WHERE type = :1", type))
+
+    models = []
     header = r.next()
     if len(header) == 3:
         for row in r:
             plz, loc, date = row
             d = parse_date(date)
             a = Abfuhr(zip = int(plz), type = type, loc = loc, date = d)
-            a.put()
+            models.append(a)
     elif len(header) == 5:
         for row in r:
             plz, loc, oel, glas, metall = row
@@ -195,18 +205,22 @@ def parse_abhol_csv(type):
             glas = glas == 'X'
             metall = metall == 'X'
             # a = Abfuhr(zip = int(plz), type = type, date = d)
-            # a.put()
+            # models.append(a)
     else:
         for row in r:
             plz, date = row
             d = parse_date(date)
             a = Abfuhr(zip = int(plz), type = type, date = d)
-            a.put()
-    return 'Done.'
+            models.append(a)
+    db.put(models)
+    return "Done, saved %d objects." % ( len(models) )
 
 def parse_date(date):
-    m = re.match(r'^(..), (\d+)\. ([A-Z][a-z]+) (\d+)$', date)
-    return datetime.date(int(m.group(4)), month_for_name_de(m.group(3)), int(m.group(2)))
+    m = re.match(r'^(..), (\d+)\. ([A-Z].+) (\d+)$', date)
+    if m:
+        return datetime.date(int(m.group(4)), month_for_name_de(m.group(3)), int(m.group(2)))
+    else:
+        logging.error("Unparseable date: " + date)
 
 app = webapp2.WSGIApplication([
         webapp2.Route('/<zip:\d{4}>', handler=GetCal, name='ical'),
