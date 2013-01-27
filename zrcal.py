@@ -168,12 +168,12 @@ class LoadCalendarPage(webapp2.RequestHandler):
                 types = known_types
         for type in types:
             try:
-                self.response.out.write('<a href="%s">%s</a>'
-                                        % (type_to_csv_url(type), type))
-                self.response.out.write('File: %s'
-                                        % parse_abhol_csv(type))
+                self.response.out.write("<a href=\"%s\">%s</a>: %s<br />\n"
+                                        % (type_to_csv_url(type), type,
+                                           parse_abhol_csv(type)))
             except KeyError:
-                self.response.out.write('UNKNOWN URL FOR %s' % (type))
+                logging.error("Unknown URL for %s" % (type))
+                self.response.out.write('Unknown URL for %s' % (type))
 
 def iso_8859_1_csv_reader(csv_data, dialect=csv.excel, **kwargs):
     csv_reader = csv.reader(iso_8859_1_utf_8_transcoder(csv_data),
@@ -186,32 +186,38 @@ def iso_8859_1_utf_8_transcoder(unicode_csv_data):
         yield line.decode('iso-8859-1').encode('utf-8')
 
 def parse_abhol_csv(type):
-    url = type_to_csv_url(type)
-    r = iso_8859_1_csv_reader(urllib2.urlopen(url), dialect='excel', )
-    db.delete(db.GqlQuery("SELECT * FROM Abfuhr WHERE type = :1", type))
+    return parse_abhol_csv_url(type, type_to_csv_url(type))
 
+def parse_abhol_csv_url(type, url):
+    return parse_abhol_csv_from_reader(type,
+                                       url,
+                                       iso_8859_1_csv_reader(urllib2.urlopen(url),
+                                                             dialect='excel'))
+
+def parse_abhol_csv_from_reader(type, url, r):
     models = []
     header = r.next()
-    if len(header) == 3:
+    if len(header) == 2:
+        for row in r:
+            plz, date = row
+            d = parse_date(date)
+            models.append(Abfuhr(zip = int(plz), type = type, date = d))n
+    elif len(header) == 3:
         for row in r:
             plz, loc, date = row
             d = parse_date(date)
-            a = Abfuhr(zip = int(plz), type = type, loc = loc, date = d)
-            models.append(a)
+            models.append(Abfuhr(zip = int(plz), type = type, loc = loc, date = d))
     elif len(header) == 5:
         for row in r:
             plz, loc, oel, glas, metall = row
             oel = oel == 'X'
             glas = glas == 'X'
             metall = metall == 'X'
-            # a = Abfuhr(zip = int(plz), type = type, date = d)
-            # models.append(a)
+            # models.append(Abfuhr(zip = int(plz), type = type, date = d))
     else:
-        for row in r:
-            plz, date = row
-            d = parse_date(date)
-            a = Abfuhr(zip = int(plz), type = type, date = d)
-            models.append(a)
+        logging.error("URL %s for type %s has %d columns - cannot understand."
+                      % ( url, type, len(header) ))
+    db.delete(db.GqlQuery("SELECT * FROM Abfuhr WHERE type = :1", type))
     db.put(models)
     return "Done, saved %d objects." % ( len(models) )
 
