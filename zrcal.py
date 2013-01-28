@@ -201,7 +201,7 @@ def parse_abhol_csv_from_reader(type, url, r):
         for row in r:
             plz, date = row
             d = parse_date(date)
-            models.append(Abfuhr(zip = int(plz), type = type, date = d))n
+            models.append(Abfuhr(zip = int(plz), type = type, date = d))
     elif len(header) == 3:
         for row in r:
             plz, loc, date = row
