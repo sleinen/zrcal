@@ -175,9 +175,9 @@ class LoadCalendarPage(webapp2.RequestHandler):
                 logging.error("Unknown URL for %s" % (type))
                 self.response.out.write('Unknown URL for %s' % (type))
 
-def iso_8859_1_csv_reader(csv_data, dialect=csv.excel, **kwargs):
+def iso_8859_1_csv_reader(csv_data, dialect=csv.excel, delimiter=';', **kwargs):
     csv_reader = csv.reader(iso_8859_1_utf_8_transcoder(csv_data),
-                            dialect=dialect, **kwargs)
+                            dialect=dialect, delimiter=delimiter, **kwargs)
     for row in csv_reader:
         yield [unicode(cell, 'utf-8') for cell in row]
 
