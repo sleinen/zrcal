@@ -3,3 +3,7 @@ indexes:
   properties:
   - name: zip
   - name: date
+- kind: Abfuhr
+  properties:
+  - name: type
+  - name: date

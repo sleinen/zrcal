@@ -1,4 +1,4 @@
-# -*- mode: python; coding: utf-8 -*-
+# -*- mode: python; coding: latin-1 -*-
 ###
 ### This tool generates personalized calendars based on Open
 ### Government Data.
@@ -82,6 +82,7 @@ type_to_tag = dict({
         'sonderabfall':  'aPGSePc',
         'sammelstellen': '9B9mIjG' })
 known_types = type_to_tag.keys()
+#known_types = ['papier']
 known_types.sort()
 
 class GetMeta(webapp2.RequestHandler):
@@ -99,30 +100,6 @@ class GetMeta(webapp2.RequestHandler):
 
 def type_to_csv_url(type):
     return 'http://data.stadt-zuerich.ch/ogd.%s.link' % type_to_tag[type]
-
-month_for_name_de_dict = dict({
-        "Januar":	 1,
-        "Februar":	 2,
-        "MÃ¤rz":		 3,
-        "April":	 4,
-        "Mai":		 5,
-        "Juni":		 6,
-        "Juli":		 7,
-        "August":	 8,
-        "September":	 9,
-        "Oktober":	10,
-        "November":	11,
-        "Dezember":	12,
-})
-
-def month_for_name_de(name):
-    try:
-        return month_for_name_de_dict[name]
-    except KeyError:
-        logging.error("Unknown month %s (%s), assuming this means March."
-                      % (name,
-                         ":".join("{0:x}".format(ord(c)) for c in name)))
-        return 3
 
 class MainPage(webapp2.RequestHandler):
     def get(self):
@@ -168,65 +145,110 @@ class LoadCalendarPage(webapp2.RequestHandler):
                 types = known_types
         for type in types:
             try:
+                parsed = ParsedAbholCSV(type)
+                parsed.store()
+
                 self.response.out.write("<a href=\"%s\">%s</a>: %s<br />\n"
                                         % (type_to_csv_url(type), type,
-                                           parse_abhol_csv(type)))
+                                           parsed.size()))
             except KeyError:
                 logging.error("Unknown URL for %s" % (type))
                 self.response.out.write('Unknown URL for %s' % (type))
 
-def iso_8859_1_csv_reader(csv_data, dialect=csv.excel, delimiter=';', **kwargs):
-    csv_reader = csv.reader(iso_8859_1_utf_8_transcoder(csv_data),
-                            dialect=dialect, delimiter=delimiter, **kwargs)
-    for row in csv_reader:
-        yield [unicode(cell, 'utf-8') for cell in row]
+class ParsedAbholCSV:
 
-def iso_8859_1_utf_8_transcoder(unicode_csv_data):
-    for line in unicode_csv_data:
-        yield line.decode('iso-8859-1').encode('utf-8')
+    """A class representing a parsed CSV file"""
 
-def parse_abhol_csv(type):
-    return parse_abhol_csv_url(type, type_to_csv_url(type))
+    def __init__(self, type, url=None, reader=None):
 
-def parse_abhol_csv_url(type, url):
-    return parse_abhol_csv_from_reader(type,
-                                       url,
-                                       iso_8859_1_csv_reader(urllib2.urlopen(url),
-                                                             dialect='excel'))
+        def utf_8_csv_reader(csv_data, dialect=csv.excel, delimiter=';', **kwargs):
+            csv_reader = csv.reader(csv_data,
+                                    dialect=dialect, delimiter=delimiter, **kwargs)
+            for row in csv_reader:
+                yield [unicode(cell, 'utf-8') for cell in row]
 
-def parse_abhol_csv_from_reader(type, url, r):
-    models = []
-    header = r.next()
-    if len(header) == 2:
-        for row in r:
-            plz, date = row
-            d = parse_date(date)
-            models.append(Abfuhr(zip = int(plz), type = type, date = d))
-    elif len(header) == 3:
-        for row in r:
-            plz, loc, date = row
-            d = parse_date(date)
-            models.append(Abfuhr(zip = int(plz), type = type, loc = loc, date = d))
-    elif len(header) == 5:
-        for row in r:
-            plz, loc, oel, glas, metall = row
-            oel = oel == 'X'
-            glas = glas == 'X'
-            metall = metall == 'X'
-            # models.append(Abfuhr(zip = int(plz), type = type, date = d))
-    else:
-        logging.error("URL %s for type %s has %d columns - cannot understand."
-                      % ( url, type, len(header) ))
-    db.delete(db.GqlQuery("SELECT * FROM Abfuhr WHERE type = :1", type))
-    db.put(models)
-    return "Done, saved %d objects." % ( len(models) )
+        def parse_date(date):
 
-def parse_date(date):
-    m = re.match(r'^(..), (\d+)\. ([A-Z].+) (\d+)$', date)
-    if m:
-        return datetime.date(int(m.group(4)), month_for_name_de(m.group(3)), int(m.group(2)))
-    else:
-        logging.error("Unparseable date: " + date)
+            def month_for_name_de(name):
+                try:
+                    return self.month_for_name_de_dict[name]
+                except KeyError:
+                    logging.error("Unknown month %s (%s), assuming this means March."
+                                  % (name,
+                                     ":".join("{0:x}".format(ord(c)) for c in name)))
+                    return 3
+
+            m = re.match(r'^(..), (\d+)\. ([A-Z].+) (\d+)$', date)
+            if m:
+                return datetime.date(int(m.group(4)), month_for_name_de(m.group(3)), int(m.group(2)))
+            else:
+                logging.error("Unparseable date: " + date)
+
+        self.month_for_name_de_dict = dict({
+            u"Januar":	  1,
+            u"Februar":	  2,
+            u"März":	  3,
+            u"April":	  4,
+            u"Mai":	  5,
+            u"Juni":	  6,
+            u"Juli":	  7,
+            u"August":	  8,
+            u"September": 9,
+            u"Oktober":	 10,
+            u"November": 11,
+            u"Dezember": 12,
+        })
+
+        self.type = type
+        ## Keep track of earliest and latest events in the CSV
+        self.earliest_date = None
+        self.latest_date = None
+        self.models = []
+
+        if url is None:
+            url = type_to_csv_url(type)
+        if reader is None:
+            reader = utf_8_csv_reader(urllib2.urlopen(url),
+                                      dialect='excel')
+
+        header = reader.next()
+
+        def note_date(date):
+            if self.earliest_date is None or self.earliest_date > date:
+                self.earliest_date = date
+            if self.latest_date is None or self.latest_date < date:
+                self.latest_date = date
+
+        if len(header) == 2:
+            for row in reader:
+                plz, date = row
+                d = parse_date(date)
+                self.models.append(Abfuhr(zip = int(plz), type = type, date = d))
+                note_date(d)
+        elif len(header) == 3:
+            for row in reader:
+                plz, loc, date = row
+                d = parse_date(date)
+                self.models.append(Abfuhr(zip = int(plz), type = type, loc = loc, date = d))
+                note_date(d)
+        elif len(header) == 5:
+            for row in reader:
+                plz, loc, oel, glas, metall = row
+                oel = oel == 'X'
+                glas = glas == 'X'
+                metall = metall == 'X'
+                # self.models.append(Abfuhr(zip = int(plz), type = type, date = d))
+        else:
+            logging.error("URL %s for type %s has %d columns - cannot understand."
+                          % ( url, type, len(header) ))
+
+    def store(self):
+        db.delete(db.GqlQuery("SELECT * FROM Abfuhr WHERE type = :1 AND date >= :2 AND date <= :3",
+                              self.type, self.earliest_date, self.latest_date))
+        db.put(self.models)
+
+    def size(self):
+        return len(self.models)
 
 app = webapp2.WSGIApplication([
         webapp2.Route('/<zip:\d{4}>', handler=GetCal, name='ical'),
