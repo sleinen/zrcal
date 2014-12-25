@@ -39,13 +39,16 @@ class Abfuhr(db.Model):
 
     def to_icalendar_event(self):
         ev = icalendar.Event()
-        ev.add('summary', self.type)
+        params = {'language': 'de'}
+        ev.add('summary', self.type, parameters=params)
         if self.date and isinstance(self.date, datetime.date):
             ev.add('dtstart', self.date)
         if self.loc:
-            ev.add('location', self.loc + ', ' + str(self.zip))
+            ev.add('location', self.loc + ', ' + str(self.zip),
+                   parameters=params)
         else:
-            ev.add('location', str(self.zip))
+            ev.add('location', str(self.zip),
+                   parameters=params)
         return ev
 
 class OGDZMetaPage(db.Model):
