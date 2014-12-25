@@ -121,7 +121,7 @@ class GetCal(webapp2.RequestHandler):
             zip = int(self.request.get('zip'))
         else:
             zip = int(zip)
-        self.response.headers['Content-Type'] = 'text/calendar'
+        self.response.headers['Content-Type'] = 'text/calendar; charset="utf-8"'
         self.response.headers['Content-Disposition'] = 'attachment; filename=' + 'zrcal-' + str(zip) + '.ics'
         cal = icalendar.Calendar()
         cal.add('prodid', '-//zrcal//leinen.ch//')
