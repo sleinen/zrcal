@@ -1,0 +1,1 @@
+This Web application mines [Open Government Data published by the city of Zurich](http://data.stadt-zuerich.ch/), in particular the schedules for the collection of various types of garbage.  Users can generate personalized calendars depending on their place of residence.
