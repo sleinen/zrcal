@@ -72,19 +72,12 @@ class OGDZMetaPage(db.Model):
             return meta.contents
 
 def meta_url(type):
-    return 'http://data.stadt-zuerich.ch/portal/de/index/ogd/daten/entsorgungskalender_%s.html' % type
+    return 'https://data.stadt-zuerich.ch/dataset/entsorgungskalender-%s' % type
 
-type_to_tag = dict({
-        'papier':        'JsBezax',
-        'kehricht':      'N88dzax',
-        'karton':        'bkioKlI',
-        'gartenabfall':  'EMV3p0n',
-        'eTram':         'TYcmIjG',
-        'cargotram':     'G6doKlI',
-        'textilien':     'RzGSePc',
-        'sonderabfall':  'aPGSePc',
-        'sammelstellen': '9B9mIjG' })
-known_types = type_to_tag.keys()
+known_types = [
+    'papier', 'kehricht', 'karton', 'gartenabfall', 'eTram', 'cargotram', 'textilien', 'sonderabfall',
+    'sammelstellen'
+]
 #known_types = ['papier']
 known_types.sort()
 
@@ -94,15 +87,28 @@ class GetMeta(webapp2.RequestHandler):
         # self.response.charset = 'utf-8'
         url = meta_url(type)
         html = OGDZMetaPage.get_meta_page(type, url).decode('utf-8')
-        soup = BeautifulSoup(html)
+        soup = BeautifulSoup(html, 'lxml')
         self.response.out.write("Title: " + soup.title.string + "<br />\n")
         self.response.out.write("Description: ")
         # self.response.out.write(soup.find(id='description'))
         self.response.out.write("Download: ")
-        self.response.out.write(soup.find(id='download').find_all('a'))
+        self.response.out.write(soup.find(id='dataset-resources').find_all('a'))
 
 def type_to_csv_url(type):
-    return 'http://data.stadt-zuerich.ch/ogd.%s.link' % type_to_tag[type]
+    root = 'https://data.stadt-zuerich.ch'
+    confuse_types = dict({
+        'gartenabfall': 'bioabfall',
+        'cargotram':    'cargoTram'
+    })
+    confused_type = type
+    if type in confuse_types:
+        confused_type = confuse_types[type]
+    if type == 'sammelstellen':
+        dir = "/storage/f/entsorgung_%s" % ( type )
+    else:
+        dir = "/storage/f/entsorgungskalender_%s" % ( type )
+    return root + '/' + dir + '/' + "Entsorgungskalender_%s_2015.csv" \
+        % ( confused_type )
 
 class MainPage(webapp2.RequestHandler):
     def get(self):
