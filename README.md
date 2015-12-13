@@ -1,11 +1,12 @@
 # zrcal - Zurich Recycling Calendar
 
 A Web application that can mine Open Government Data published by the
-City of Zurich on data.stadt-zuerich.ch, in particular the schedules
-for the collection of various types of waste.  Users can then generate
-personalized calendars depending on where they live.  These calendars
-are in standard iCalendar format, and can be imported in common
-calendar tools.
+City of Zurich on
+[data.stadt-zuerich.ch](https://data.stadt-zuerich.ch/), in particular
+the schedules for the collection of various types of waste.  Users can
+then generate personalized calendars depending on where they live.
+These calendars are in standard iCalendar format, and can be imported
+in common calendar tools.
 
 ## INSTALLATION
 
