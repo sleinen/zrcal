@@ -1,7 +1,7 @@
 # -*- mode: python; coding: utf-8 -*-
 ###
-### This tool generates personalized calendars based on Open
-### Government Data.
+### This tool generates personalized calendars based on
+### Open Government Data.
 ###
 import datetime
 import urllib2
