@@ -6,13 +6,13 @@ threadsafe: true
 
 libraries:
 - name: lxml
-  version: "2.3"
+  version: "2.3.5"
 - name: jinja2
   version: "2.6"
 - name: markupsafe
   version: "0.15"
 - name: django
-  version: "1.3"
+  version: "1.5"
 
 handlers:
 - url: /(favicon.ico)
