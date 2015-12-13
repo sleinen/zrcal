@@ -1,4 +1,4 @@
-# -*- mode: python; coding: latin-1 -*-
+# -*- mode: python; coding: utf-8 -*-
 ###
 ### This tool generates personalized calendars based on Open
 ### Government Data.
@@ -190,7 +190,7 @@ class ParsedAbholCSV:
         self.month_for_name_de_dict = dict({
             u"Januar":	  1,
             u"Februar":	  2,
-            u"März":	  3,
+            u"MÃ¤rz":	  3,
             u"April":	  4,
             u"Mai":	  5,
             u"Juni":	  6,
