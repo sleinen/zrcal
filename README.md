@@ -22,7 +22,7 @@ This can be done by making sure they are installed in your local
 Python environment, and then adding symlinks from this directory to
 the installation directories.
 
-Copyright (c) Simon Leinen, 2012 - 2015
+Copyright (c) Simon Leinen, 2012 - 2016
 
 This program is released as free software under the GNU Affero General
 Public License.  See file `COPYING' for the licensing conditions.
