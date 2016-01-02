@@ -4,6 +4,7 @@
 ### Open Government Data.
 ###
 import datetime
+import string
 import urllib2
 import wsgiref.handlers
 import re
@@ -71,20 +72,28 @@ class OGDZMetaPage(db.Model):
             meta.put()
             return meta.contents
 
-def meta_url(type):
-    return 'http://data.stadt-zuerich.ch/portal/de/index/ogd/daten/entsorgungskalender_%s.html' % type
+def type_to_dstype(type):
+    if type == 'sammelstellen':
+        return 'entsorgung'
+    else:
+        return 'entsorgungskalender'
 
-type_to_tag = dict({
-        'papier':        'JsBezax',
-        'kehricht':      'N88dzax',
-        'karton':        'bkioKlI',
-        'gartenabfall':  'EMV3p0n',
-        'eTram':         'TYcmIjG',
-        'cargotram':     'G6doKlI',
-        'textilien':     'RzGSePc',
-        'sonderabfall':  'aPGSePc',
-        'sammelstellen': '9B9mIjG' })
-known_types = type_to_tag.keys()
+def meta_url(type):
+    dstype = type_to_dstype(type)
+    return 'https://data.stadt-zuerich.ch/dataset/%s-%s.html' % ( dstype, type )
+
+type_to_id = dict({
+    'papier':        '1fdff0f0-d477-4b2e-9997-d26ad36bf079',
+    'kehricht':      '875e5ed1-edf4-4b37-bc9f-3c0b7f448155',
+    'karton':        'f2701266-d5a6-4278-8a45-c726767a343e',
+    'gartenabfall':  '0a54aaf9-3553-4302-a6ff-605889f6e62d',
+    'eTram':         'a12a4f0d-48eb-4bf9-b252-dcc1bf429483',
+    'cargotram':     '25280960-a847-4371-b7c3-0ad651ec8c39',
+    'textilien':     '9c2e8678-9433-4400-96a2-a501e5071601',
+    'sonderabfall':  '9dcf367d-5bd4-46a9-bee1-03fdf7bc2ac3',
+    'sammelstellen': '50527dff-cc1e-403a-8c37-1a8faf731dfb',
+})
+known_types = type_to_id.keys()
 #known_types = ['papier']
 known_types.sort()
 
@@ -94,15 +103,17 @@ class GetMeta(webapp2.RequestHandler):
         # self.response.charset = 'utf-8'
         url = meta_url(type)
         html = OGDZMetaPage.get_meta_page(type, url).decode('utf-8')
-        soup = BeautifulSoup(html)
+        soup = BeautifulSoup(html, "lxml")
         self.response.out.write("Title: " + soup.title.string + "<br />\n")
         self.response.out.write("Description: ")
         # self.response.out.write(soup.find(id='description'))
         self.response.out.write("Download: ")
-        self.response.out.write(soup.find(id='download').find_all('a'))
+        self.response.out.write(soup.find(id='dataset-resources').find_all('a'))
 
 def type_to_csv_url(type):
-    return 'http://data.stadt-zuerich.ch/ogd.%s.link' % type_to_tag[type]
+    dstype = type_to_dstype(type)
+    return 'https://data.stadt-zuerich.ch/dataset/%s_%s/resource/%s/download/%s.csv' \
+        % ( dstype, type, type_to_id[type], string.lower(type) )
 
 class MainPage(webapp2.RequestHandler):
     def get(self):
@@ -164,9 +175,10 @@ class ParsedAbholCSV:
 
     def __init__(self, type, url=None, reader=None):
 
-        def utf_8_csv_reader(csv_data, dialect=csv.excel, delimiter=';', **kwargs):
+        def utf_8_csv_reader(csv_data, dialect=csv.excel, **kwargs):
             csv_reader = csv.reader(csv_data,
-                                    dialect=dialect, delimiter=delimiter, **kwargs)
+                                    dialect=dialect, **kwargs)
+
             for row in csv_reader:
                 yield [unicode(cell, 'utf-8') for cell in row]
 
@@ -181,6 +193,9 @@ class ParsedAbholCSV:
                                      ":".join("{0:x}".format(ord(c)) for c in name)))
                     return 3
 
+            m = re.match(r'^(\d+)-(\d\d)-(\d\d)$', date)
+            if m:
+                return datetime.date(int(m.group(1)), int(m.group(2)), int(m.group(3)))
             m = re.match(r'^(..), (\d+)\. ([A-Z].+) (\d+)$', date)
             if m:
                 return datetime.date(int(m.group(4)), month_for_name_de(m.group(3)), int(m.group(2)))
@@ -211,8 +226,9 @@ class ParsedAbholCSV:
         if url is None:
             url = type_to_csv_url(type)
         if reader is None:
+            logging.warn("Trying to retrieve %s" % (url))
             reader = utf_8_csv_reader(urllib2.urlopen(url),
-                                      dialect='excel')
+                                      dialect=csv.excel)
 
         header = reader.next()
 
@@ -224,26 +240,35 @@ class ParsedAbholCSV:
 
         if len(header) == 2:
             for row in reader:
-                plz, date = row
-                d = parse_date(date)
-                self.models.append(Abfuhr(zip = int(plz), type = type, date = d))
-                note_date(d)
+                if len(row) == 0:
+                    pass        # The 2016 CSVs end with an empty line.
+                else:
+                    plz, date = row
+                    d = parse_date(date)
+                    self.models.append(Abfuhr(zip = int(plz), type = type, date = d))
+                    note_date(d)
         elif len(header) == 3:
             for row in reader:
-                plz, loc, date = row
-                d = parse_date(date)
-                self.models.append(Abfuhr(zip = int(plz), type = type, loc = loc, date = d))
-                note_date(d)
+                if len(row) == 0:
+                    pass        # The 2016 CSVs end with an empty line.
+                else:
+                    plz, loc, date = row
+                    d = parse_date(date)
+                    self.models.append(Abfuhr(zip = int(plz), type = type, loc = loc, date = d))
+                    note_date(d)
         elif len(header) == 5:
             for row in reader:
-                plz, loc, oel, glas, metall = row
-                oel = oel == 'X'
-                glas = glas == 'X'
-                metall = metall == 'X'
-                # self.models.append(Abfuhr(zip = int(plz), type = type, date = d))
+                if len(row) == 0:
+                    pass        # The 2016 CSVs end with an empty line.
+                else:
+                    plz, loc, oel, glas, metall = row
+                    oel = oel == 'X'
+                    glas = glas == 'X'
+                    metall = metall == 'X'
+                    # self.models.append(Abfuhr(zip = int(plz), type = type, date = d))
         else:
-            logging.error("URL %s for type %s has %d columns - cannot understand."
-                          % ( url, type, len(header) ))
+            logging.error("URL %s for type %s has %d columns (%s) - cannot understand."
+                          % ( url, type, len(header), header ))
 
     def store(self):
         db.delete(db.GqlQuery("SELECT * FROM Abfuhr WHERE type = :1 AND date >= :2 AND date <= :3",
