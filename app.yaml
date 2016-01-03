@@ -1,5 +1,4 @@
 runtime: python27
-version: 2016v0-50
 api_version: 1
 threadsafe: true
 
