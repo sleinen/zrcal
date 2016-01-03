@@ -122,6 +122,20 @@ class MainPage(webapp2.RequestHandler):
                                                 ga_id=ga_id,
                                                 google_ad_client=google_ad_client))
 
+def cal_add_name(cal, name, req):
+    # draft-ietf-calext-extensions-01 defines NAME
+    params = {'language': 'de'}
+    cal.add('X-WR-CALNAME', name, parameters=params)
+    params = {'language': 'de'}
+    cal.add('NAME', name, parameters=params)
+
+def cal_add_desc(cal, desc, req):
+    # draft-ietf-calext-extensions-01 defines DESCRIPTION
+    params = {'language': 'de'}
+    cal.add('X-WR-CALDESC', desc, parameters=params)
+    params = {'language': 'de'}
+    cal.add('DESCRIPTION', desc, parameters=params)
+
 class GetCal(webapp2.RequestHandler):
     def get(self, zip=None, types=None):
         if types == None:
@@ -140,6 +154,12 @@ class GetCal(webapp2.RequestHandler):
         cal = icalendar.Calendar()
         cal.add('prodid', '-//zrcal//leinen.ch//')
         cal.add('version', '2.0')
+        cal_add_name(cal, 'Entsorgung %d' % (zip), self.request)
+        cal_add_desc(cal, ('Entsorgungskalender für PLZ %d.  '
+                           +'Erzeugt von http://zrcal.leinen.ch/ '
+                           +'basierend auf Open Government Data '
+                           +'der Stadt Zürich—https://data.stadt-zuerich.ch/') \
+                     % (zip), self.request)
         for ret in db.GqlQuery('SELECT * from Abfuhr '
                                'WHERE zip = :1 '
                                'ORDER BY date',
