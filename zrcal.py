@@ -82,7 +82,7 @@ def meta_url(type):
     dstype = type_to_dstype(type)
     return 'https://data.stadt-zuerich.ch/dataset/%s-%s.html' % ( dstype, type )
 
-type_to_id = dict({
+type_to_id_2016 = dict({
     'papier':        '1fdff0f0-d477-4b2e-9997-d26ad36bf079',
     'kehricht':      '875e5ed1-edf4-4b37-bc9f-3c0b7f448155',
     'karton':        'f2701266-d5a6-4278-8a45-c726767a343e',
@@ -93,6 +93,19 @@ type_to_id = dict({
     'sonderabfall':  '9dcf367d-5bd4-46a9-bee1-03fdf7bc2ac3',
     'sammelstellen': '50527dff-cc1e-403a-8c37-1a8faf731dfb',
 })
+type_to_id_2017 = dict({
+    'papier':        '049cc13a-d8b1-4ab6-8ccb-1363c1a65026',
+    'kehricht':      'c64a9a9a-e09c-4c88-896d-b9580163b704',
+    'karton':        'b6a9f085-6434-4ba2-b262-9856a4173ace',
+    'gartenabfall':  '12aa005e-f76f-4b42-a3c5-fd9b24e3824f',
+    'eTram':         'bd648272-dd43-492a-8fff-86c0fe248ae9',
+    'cargotram':     '176073cf-dcd6-4c77-b18a-fc89f955590a',
+    'textilien':     '4d484de2-0e8d-49d4-94b4-afcacdeb5305',
+    'sonderabfall':  'cfda766c-e263-479c-8f42-e26b0cf9c9da',
+    'sammelstellen': 'c351476a-1101-4f3b-9e91-24c8d6498acb',
+})
+type_to_id = type_to_id_2017
+
 known_types = type_to_id.keys()
 #known_types = ['papier']
 known_types.sort()
