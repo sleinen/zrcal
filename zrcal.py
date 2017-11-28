@@ -104,7 +104,18 @@ type_to_id_2017 = dict({
     'sonderabfall':  'cfda766c-e263-479c-8f42-e26b0cf9c9da',
     'sammelstellen': 'c351476a-1101-4f3b-9e91-24c8d6498acb',
 })
-type_to_id = type_to_id_2017
+type_to_id_2018 = dict({
+    'papier':        'c49b791a-cef8-45c9-9f2d-dd3e62e521c9',
+    'kehricht':      '6853af21-11ec-4175-8d32-e265b60b9026',
+    'karton':        'd198a46f-2c03-4e9e-8cdc-24fde90d29c6',
+    'gartenabfall':  'cee9cf76-3da3-44d3-bea5-71b3e72aa8f6',
+    'eTram':         '0dba00fe-8620-4c3a-a9f6-c0428a3399f3',
+    'cargotram':     '66f1bdee-adf8-4b62-804b-0aecbca7627a',
+    'textilien':     '3835230a-850b-42b6-868e-c3a4fb1a7401',
+    'sonderabfall':  '0b8990d1-8732-45c3-b555-79548175870f',
+    'sammelstellen': '9cc8d403-d13a-4631-84ca-6b76e785c6c6',
+})
+type_to_id = type_to_id_2018
 
 known_types = type_to_id.keys()
 #known_types = ['papier']
