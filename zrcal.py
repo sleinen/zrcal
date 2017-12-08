@@ -15,6 +15,7 @@ from google.appengine.ext import db
 from google.appengine.ext.webapp.util import run_wsgi_app
 import icalendar
 from bs4 import BeautifulSoup
+import django
 from django.conf import settings
 from django.utils import translation
 import jinja2
@@ -334,3 +335,4 @@ app = webapp2.WSGIApplication([
         ('/load-calendar', LoadCalendarPage),
         ('/meta-page', GetMeta),
         ], debug=True)
+django.setup()
