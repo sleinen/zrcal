@@ -3,6 +3,8 @@ api_version: 1
 threadsafe: true
 
 libraries:
+- name: six
+  version: "1.9.0"
 - name: lxml
   version: "2.3.5"
 - name: setuptools
