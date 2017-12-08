@@ -96,7 +96,7 @@ type_to_id_2016 = dict({
 type_to_id_2017 = dict({
     'papier':        '049cc13a-d8b1-4ab6-8ccb-1363c1a65026',
     'kehricht':      'c64a9a9a-e09c-4c88-896d-b9580163b704',
-    'karton':        'b6a9f085-6434-4ba2-b262-9856a4173ace',
+    'karton':        'b6a9f085-6434-4ba2-b262-9856a4173ace', # https://data.stadt-zuerich.ch/dataset/entsorgungskalender_karton/resource/b6a9f085-6434-4ba2-b262-9856a4173ace/download/entsorgungskalenderkarton2017.csv
     'gartenabfall':  '12aa005e-f76f-4b42-a3c5-fd9b24e3824f',
     'eTram':         'bd648272-dd43-492a-8fff-86c0fe248ae9',
     'cargotram':     '176073cf-dcd6-4c77-b18a-fc89f955590a',
@@ -104,7 +104,19 @@ type_to_id_2017 = dict({
     'sonderabfall':  'cfda766c-e263-479c-8f42-e26b0cf9c9da',
     'sammelstellen': 'c351476a-1101-4f3b-9e91-24c8d6498acb',
 })
-type_to_id = type_to_id_2017
+type_to_id_2018 = dict({
+    'papier':        'c49b791a-cef8-45c9-9f2d-dd3e62e521c9', # https://data.stadt-zuerich.ch/dataset/entsorgungskalender_papier/resource/c49b791a-cef8-45c9-9f2d-dd3e62e521c9/download/entsorgungskalenderpapier2018.csv
+    'kehricht':      '2d613f1a-f860-4684-800e-36fc127cd33b', # https://data.stadt-zuerich.ch/dataset/entsorgungskalender_kehricht/resource/2d613f1a-f860-4684-800e-36fc127cd33b/download/entsorgungskalenderkehricht2018.csv
+    'karton':        'd940b125-c8d5-47d9-93ab-1a3c91a65b34', # https://data.stadt-zuerich.ch/dataset/entsorgungskalender_karton/resource/d940b125-c8d5-47d9-93ab-1a3c91a65b34/download/entsorgungskalenderkarton2018.csv
+    #?? 'gartenabfall':  'cee9cf76-3da3-44d3-bea5-71b3e72aa8f6',
+    'gartenabfall':   '70f2589d-4db6-443f-bc0b-9dc905f79388',
+    #'eTram':         '0dba00fe-8620-4c3a-a9f6-c0428a3399f3',
+    #'cargotram':     '66f1bdee-adf8-4b62-804b-0aecbca7627a',
+    'textilien':     '3835230a-850b-42b6-868e-c3a4fb1a7401', # https://data.stadt-zuerich.ch/dataset/entsorgungskalender_textilien/resource/3835230a-850b-42b6-868e-c3a4fb1a7401/download/entsorgungskalendertextilien2018.csv
+    'sonderabfall':  '0b8990d1-8732-45c3-b555-79548175870f', # https://data.stadt-zuerich.ch/dataset/entsorgungskalender_sonderabfall/resource/0b8990d1-8732-45c3-b555-79548175870f/download/entsorgungskalendersonderabfall2018.csv
+    #'sammelstellen': '9cc8d403-d13a-4631-84ca-6b76e785c6c6', # OH DEAR
+})
+type_to_id = type_to_id_2018
 
 known_types = type_to_id.keys()
 #known_types = ['papier']
@@ -125,8 +137,9 @@ class GetMeta(webapp2.RequestHandler):
 
 def type_to_csv_url(type):
     dstype = type_to_dstype(type)
-    return 'https://data.stadt-zuerich.ch/dataset/%s_%s/resource/%s/download/%s.csv' \
-        % ( dstype, type, type_to_id[type], string.lower(type) )
+    foo = 'bioabfall' if type == 'gartenabfall' else type
+    return 'https://data.stadt-zuerich.ch/dataset/%s_%s/resource/%s/download/%s%s2018.csv' \
+        % ( dstype, type, type_to_id[type], dstype, string.lower(foo) )
 
 class MainPage(webapp2.RequestHandler):
     def get(self):
@@ -278,8 +291,11 @@ class ParsedAbholCSV:
                 else:
                     plz, date = row
                     d = parse_date(date)
-                    self.models.append(Abfuhr(zip = int(plz), type = type, date = d))
-                    note_date(d)
+                    if plz == '':
+                        logging.warn("Missing PLZ in %s" % (url))
+                    else:
+                        self.models.append(Abfuhr(zip = int(plz), type = type, date = d))
+                        note_date(d)
         elif len(header) == 3:
             for row in reader:
                 if len(row) == 0:
