@@ -110,8 +110,8 @@ type_to_id_2018 = dict({
     'karton':        'd940b125-c8d5-47d9-93ab-1a3c91a65b34', # https://data.stadt-zuerich.ch/dataset/entsorgungskalender_karton/resource/d940b125-c8d5-47d9-93ab-1a3c91a65b34/download/entsorgungskalenderkarton2018.csv
     #?? 'gartenabfall':  'cee9cf76-3da3-44d3-bea5-71b3e72aa8f6',
     'gartenabfall':   '70f2589d-4db6-443f-bc0b-9dc905f79388',
-    #'eTram':         '0dba00fe-8620-4c3a-a9f6-c0428a3399f3',
-    #'cargotram':     '66f1bdee-adf8-4b62-804b-0aecbca7627a',
+    'eTram':         'b7002774-18d6-48fc-970d-1c3a0f53351b', # https://data.stadt-zuerich.ch/dataset/entsorgungskalender_eTram/resource/b7002774-18d6-48fc-970d-1c3a0f53351b/download/entsorgungskalenderetram2018.csv
+    'cargotram':     '27bcc9a4-a0f4-49dc-902a-78496721817d', # https://data.stadt-zuerich.ch/dataset/entsorgungskalender_cargotram/resource/27bcc9a4-a0f4-49dc-902a-78496721817d/download/entsorgungskalendercargotram2018.csv
     'textilien':     '3835230a-850b-42b6-868e-c3a4fb1a7401', # https://data.stadt-zuerich.ch/dataset/entsorgungskalender_textilien/resource/3835230a-850b-42b6-868e-c3a4fb1a7401/download/entsorgungskalendertextilien2018.csv
     'sonderabfall':  '0b8990d1-8732-45c3-b555-79548175870f', # https://data.stadt-zuerich.ch/dataset/entsorgungskalender_sonderabfall/resource/0b8990d1-8732-45c3-b555-79548175870f/download/entsorgungskalendersonderabfall2018.csv
     #'sammelstellen': '9cc8d403-d13a-4631-84ca-6b76e785c6c6', # OH DEAR
