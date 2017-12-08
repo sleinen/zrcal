@@ -15,14 +15,14 @@ This application can be deployed on Google App Engine under the Python
 following libraries need to be uploaded:
 
 - bs4 (BeautifulSoup)
+- dateutil (required by icalendar)
 - icalendar
-- pytz
 
 This can be done by making sure they are installed in your local
 Python environment, and then adding symlinks from this directory to
 the installation directories.
 
-Copyright (c) Simon Leinen, 2012 - 2016
+Copyright (c) Simon Leinen, 2012 - 2017
 
 This program is released as free software under the GNU Affero General
 Public License.  See file `COPYING' for the licensing conditions.
