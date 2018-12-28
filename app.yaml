@@ -13,8 +13,6 @@ libraries:
   version: "2.6"
 - name: markupsafe
   version: "0.23"
-- name: django
-  version: "1.11"
 - name: pytz
   version: "2017.3"
 - name: webapp2
