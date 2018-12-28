@@ -8,15 +8,15 @@ libraries:
 - name: lxml
   version: "3.7.3"
 - name: setuptools
-  version: "0.6c11"
+  version: "36.6.0"
 - name: jinja2
   version: "2.6"
 - name: markupsafe
   version: "0.23"
-- name: django
-  version: "1.11"
 - name: pytz
-  version: "2017.2"
+  version: "2017.3"
+- name: webapp2
+  version: "2.5.2"
 
 handlers:
 - url: /(favicon.ico)

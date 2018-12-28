@@ -15,15 +15,10 @@ from google.appengine.ext import db
 from google.appengine.ext.webapp.util import run_wsgi_app
 import icalendar
 from bs4 import BeautifulSoup
-import django
-from django.conf import settings
-from django.utils import translation
-import jinja2
+from webapp2_extras import jinja2, i18n
+
 import logging
 
-env = jinja2.Environment(loader=jinja2.PackageLoader('zrcal', 'templates'),
-                         extensions=['jinja2.ext.i18n'])
-env.install_gettext_translations(translation, newstyle=True)
 
 zips = [8001, 8002, 8003, 8004, 8005, 8006, 8008,
         8032, 8037, 8038, 8041, 8044, 8045, 8046,
@@ -32,6 +27,7 @@ zips = [8001, 8002, 8003, 8004, 8005, 8006, 8008,
 
 ga_id = 'UA-33259788-1'
 google_ad_client = 'ca-pub-6118177449333262'
+
 
 class Abfuhr(db.Model):
     zip = db.IntegerProperty(required=True)
@@ -52,6 +48,7 @@ class Abfuhr(db.Model):
             ev.add('location', str(self.zip),
                    parameters=params)
         return ev
+
 
 class OGDZMetaPage(db.Model):
     type = db.StringProperty(required=True)
@@ -134,7 +131,20 @@ known_types = type_to_id.keys()
 #known_types = ['papier']
 known_types.sort()
 
-class GetMeta(webapp2.RequestHandler):
+class BaseHandler(webapp2.RequestHandler):
+
+    @webapp2.cached_property
+    def jinja2(self):
+        # Returns a Jinja2 renderer cached in the app registry.
+        return jinja2.get_jinja2(app=self.app)
+
+    def render_response(self, _template, **context):
+        # Renders a template and writes the result to the response.
+        rv = self.jinja2.render_template(_template, **context)
+        self.response.write(rv)
+
+
+class GetMeta(BaseHandler):
     def get(self):
         type = self.request.get('type')
         # self.response.charset = 'utf-8'
@@ -153,12 +163,13 @@ def type_to_csv_url(type):
     return 'https://data.stadt-zuerich.ch/dataset/%s_%s/resource/%s/download/%s%s2018.csv' \
         % ( dstype, type, type_to_id[type], dstype, string.lower(foo) )
 
-class MainPage(webapp2.RequestHandler):
+class MainPage(BaseHandler):
     def get(self):
-        template = env.get_template('index.html')
-        self.response.out.write(template.render(zips=zips,
-                                                ga_id=ga_id,
-                                                google_ad_client=google_ad_client))
+        context = {'zips': zips, 'ga_id': ga_id, 'google_ad_client': google_ad_client}
+        self.render_response('index.html', **context)
+        #self.response.out.write(template.render(zips=zips,
+        #                                        ga_id=ga_id,
+        #                                        google_ad_client=google_ad_client))
 
 def cal_add_name(cal, name, req):
     # draft-ietf-calext-extensions-01 defines NAME
@@ -174,7 +185,7 @@ def cal_add_desc(cal, desc, req):
     params = {'language': 'de'}
     cal.add('DESCRIPTION', desc, parameters=params)
 
-class GetCal(webapp2.RequestHandler):
+class GetCal(BaseHandler):
     def get(self, zip=None, types=None):
         if types == None:
             if self.request.get('types'):
@@ -206,7 +217,7 @@ class GetCal(webapp2.RequestHandler):
                 cal.add_component(ret.to_icalendar_event())
         self.response.out.write(cal.to_ical())
 
-class LoadCalendarPage(webapp2.RequestHandler):
+class LoadCalendarPage(BaseHandler):
     def get(self):
         if self.request.get('types'):
             types = self.request.get('types').split(' ')
@@ -339,11 +350,13 @@ class ParsedAbholCSV:
     def size(self):
         return len(self.models)
 
+config = {'webapp2_extras.jinja2': {
+    'template_path': 'templates',
+    'environment_args': { 'extensions': ['jinja2.ext.i18n'] }}}
 app = webapp2.WSGIApplication([
         webapp2.Route('/<zip:\d{4}>', handler=GetCal, name='ical'),
         webapp2.Route('/<zip:\d{4}>/<types:.*>', handler=GetCal, name='ical'),
         ('/', MainPage),
         ('/load-calendar', LoadCalendarPage),
         ('/meta-page', GetMeta),
-        ], debug=True)
-django.setup()
+        ], debug=True, config=config)
