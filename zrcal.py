@@ -160,9 +160,9 @@ class GetMeta(BaseHandler):
         html = OGDZMetaPage.get_meta_page(type, url)
         if html is None:
             self.response.write("Error loading meta page</br>")
-            self.response.write("URL: {}</br>".format(
-                url))
+            self.response.write("URL: {}</br>".format(url))
         else:
+            self.response.write("URL: {}</br>".format(url))
             html = html.decode('utf-8')
             soup = BeautifulSoup(html, "lxml")
             self.response.write("Title: " + soup.title.string + "<br />\n")
