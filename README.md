@@ -18,11 +18,10 @@ following libraries need to be uploaded:
 - dateutil (required by icalendar)
 - icalendar
 
-This can be done by making sure they are installed in your local
-Python environment, and then adding symlinks from this directory to
-the installation directories.
+This can be done by installing them in the `lib` subdirectory using
+`pip install -t lib/ bs4`, etc.
 
-Copyright (c) Simon Leinen, 2012 - 2017
+Copyright (c) Simon Leinen, 2012 - 2018
 
 This program is released as free software under the GNU Affero General
 Public License.  See file `COPYING' for the licensing conditions.
