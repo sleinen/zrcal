@@ -117,7 +117,18 @@ type_to_id_2018 = dict({
     'sonderabfall':  '0b8990d1-8732-45c3-b555-79548175870f', # https://data.stadt-zuerich.ch/dataset/entsorgungskalender_sonderabfall/resource/0b8990d1-8732-45c3-b555-79548175870f/download/entsorgungskalendersonderabfall2018.csv
     #'sammelstellen': '9cc8d403-d13a-4631-84ca-6b76e785c6c6', # OH DEAR
 })
-type_to_id = type_to_id_2018
+type_to_id_2019 = dict({
+    'papier':        '87c71720-44a2-4d29-b9b6-961a17b540f6', # https://data.stadt-zuerich.ch/dataset/entsorgungskalender_papier/resource/87c71720-44a2-4d29-b9b6-961a17b540f6/download/entsorgungskalender_papier_2019.csv
+    'kehricht':      '29fcecbc-e2dd-44dc-9fb2-b24edd5f8c50', # https://data.stadt-zuerich.ch/dataset/entsorgungskalender_kehricht/resource/29fcecbc-e2dd-44dc-9fb2-b24edd5f8c50/download/entsorgungskalenderkehricht2018.csv
+    'karton':        '47c83f71-29d1-4790-a3de-b29c3de8c35a', # https://data.stadt-zuerich.ch/dataset/entsorgungskalender_karton/resource/47c83f71-29d1-4790-a3de-b29c3de8c35a/download/entsorgungskalenderkarton2018.csv
+    'gartenabfall':   '5aa7697a-552e-42cc-a539-4309c5b5ef27',
+    'eTram':         '387d8384-4432-4581-81b1-e4903143696c', # https://data.stadt-zuerich.ch/dataset/entsorgungskalender_eTram/resource/387d8384-4432-4581-81b1-e4903143696c/download/entsorgungskalenderetram2018.csv
+    'cargotram':     'd2082497-c4db-4e9c-b184-1b18f473abca', # https://data.stadt-zuerich.ch/dataset/entsorgungskalender_cargotram/resource/d2082497-c4db-4e9c-b184-1b18f473abca/download/entsorgungskalendercargotram2018.csv
+    'textilien':     '30284fdf-a47c-4054-939a-a627de9ec350', # https://data.stadt-zuerich.ch/dataset/entsorgungskalender_textilien/resource/30284fdf-a47c-4054-939a-a627de9ec350/download/entsorgungskalendertextilien2018.csv
+    'sonderabfall':  '53b143a9-5ca0-408a-82e7-e85fe4f8ece3', # https://data.stadt-zuerich.ch/dataset/entsorgungskalender_sonderabfall/resource/53b143a9-5ca0-408a-82e7-e85fe4f8ece3/download/entsorgungskalendersonderabfall2018.csv
+    #'sammelstellen': 'c18dba15-5f57-4a99-a406-92149a5cd508', # OH DEAR
+})
+type_to_id = type_to_id_2019
 
 known_types = type_to_id.keys()
 #known_types = ['papier']
