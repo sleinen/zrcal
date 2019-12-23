@@ -133,7 +133,18 @@ type_to_id_2019 = dict({
     'sonderabfall':  '53b143a9-5ca0-408a-82e7-e85fe4f8ece3',
     # 'sammelstellen': 'c18dba15-5f57-4a99-a406-92149a5cd508',
 })
-type_to_id = type_to_id_2019
+type_to_id_2020 = dict({
+    'papier':        'eeca6200-7cc1-4f05-af13-fc262b830149',
+    'kehricht':      '0d19477d-f7d2-4aec-a96b-5954d380cc79',
+    'karton':        '6d28096a-1e04-43ef-8d18-0ce9464a7329',
+    'gartenabfall':  'a0953059-f4e6-4fe5-8db3-a2ccbda884a6',
+    'eTram':         '70aae2a6-e679-48f4-8e69-271adf77def6',
+    'cargotram':     '6b139014-6e97-4316-95f7-2c14702540e7',
+    'textilien':     '9f0efe69-f502-493f-8679-4e162d534439',
+    'sonderabfall':  'ec7c2ce9-b27f-4c27-bbb8-c9e818d90b07',
+    # 'sammelstellen': 'b283fb6a-1ad4-4472-bcf9-0d3f135778b7',
+})
+    type_to_id = type_to_id_2020
 
 known_types = type_to_id.keys()
 known_types.sort()
@@ -169,7 +180,8 @@ class GetMeta(BaseHandler):
             self.response.write("Description: ")
             # self.response.write(soup.find(id='description'))
             self.response.write("Download: ")
-            self.response.write(soup.find(id='dataset-resources').find_all('a'))
+            self.response.write(soup.find(id='dataset-resources')
+                                .find_all('a'))
 
 
 def type_to_csv_url(type):
