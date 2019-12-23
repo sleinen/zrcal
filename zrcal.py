@@ -180,7 +180,8 @@ class GetMeta(BaseHandler):
             self.response.write("Description: ")
             # self.response.write(soup.find(id='description'))
             self.response.write("Download: ")
-            self.response.write(soup.find(id='dataset-resources').find_all('a'))
+            self.response.write(soup.find(id='dataset-resources')
+                                .find_all('a'))
 
 
 def type_to_csv_url(type):
