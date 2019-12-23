@@ -10,6 +10,7 @@ import wsgiref.handlers
 import re
 import csv
 import os
+import logging
 import webapp2
 from webapp2_extras import jinja2, i18n
 from google.appengine.ext import db
@@ -17,16 +18,14 @@ from google.appengine.ext.webapp.util import run_wsgi_app
 import icalendar
 from bs4 import BeautifulSoup
 
-import logging
 
-
-zips = [8001, 8002, 8003, 8004, 8005, 8006, 8008,
+ZIPS = [8001, 8002, 8003, 8004, 8005, 8006, 8008,
         8032, 8037, 8038, 8041, 8044, 8045, 8046,
         8047, 8048, 8049, 8050, 8051, 8052, 8053,
         8055, 8057, 8064]
 
-ga_id = 'UA-33259788-1'
-google_ad_client = 'ca-pub-6118177449333262'
+GA_ID = 'UA-33259788-1'
+GOOGLE_AD_CLIENT = 'ca-pub-6118177449333262'
 
 
 class Abfuhr(db.Model):
@@ -36,18 +35,18 @@ class Abfuhr(db.Model):
     date = db.DateProperty(required=True, indexed=True)
 
     def to_icalendar_event(self):
-        ev = icalendar.Event()
+        event = icalendar.Event()
         params = {'language': 'de'}
-        ev.add('summary', self.type, parameters=params)
+        event.add('summary', self.type, parameters=params)
         if self.date and isinstance(self.date, datetime.date):
-            ev.add('dtstart', self.date)
+            event.add('dtstart', self.date)
         if self.loc:
-            ev.add('location', self.loc + ', ' + str(self.zip),
+            event.add('location', self.loc + ', ' + str(self.zip),
                    parameters=params)
         else:
-            ev.add('location', str(self.zip),
+            event.add('location', str(self.zip),
                    parameters=params)
-        return ev
+        return event
 
 
 class OGDZMetaPage(db.Model):
@@ -144,7 +143,7 @@ type_to_id_2020 = dict({
     'sonderabfall':  'ec7c2ce9-b27f-4c27-bbb8-c9e818d90b07',
     # 'sammelstellen': 'b283fb6a-1ad4-4472-bcf9-0d3f135778b7',
 })
-    type_to_id = type_to_id_2020
+type_to_id = type_to_id_2020
 
 known_types = type_to_id.keys()
 known_types.sort()
@@ -194,9 +193,9 @@ def type_to_csv_url(type):
 
 class MainPage(BaseHandler):
     def get(self):
-        context = {'zips': zips,
-                   'ga_id': ga_id,
-                   'google_ad_client': google_ad_client}
+        context = {'zips': ZIPS,
+                   'ga_id': GA_ID,
+                   'google_ad_client': GOOGLE_AD_CLIENT}
         self.render_response('index.html', **context)
 
 
@@ -273,39 +272,42 @@ class LoadCalendarPage(BaseHandler):
                 self.response.write('Unknown URL for %s' % (type))
 
 
+def utf_8_csv_reader(csv_data, dialect=csv.excel, **kwargs):
+    csv_reader = csv.reader(csv_data,
+                            dialect=dialect, **kwargs)
+
+    for row in csv_reader:
+        yield [unicode(cell, 'utf-8') for cell in row]
+
+
+def month_for_name_de(name):
+    try:
+        return self.month_for_name_de_dict[name]
+    except KeyError:
+        logging.error("Unknown month %s (%s), assuming this means March."
+                      % (name,
+                         ":".join("{0:x}".format(ord(c)) for c in name)))
+        return 3
+
+
+def parse_date(date):
+
+    m = re.match(r'^(\d+)-(\d\d)-(\d\d)$', date)
+    if m:
+        return datetime.date(int(m.group(1)),
+                             int(m.group(2)), int(m.group(3)))
+    m = re.match(r'^(..), (\d+)\. ([A-Z].+) (\d+)$', date)
+    if m:
+        return datetime.date(int(m.group(4)),
+                             month_for_name_de(m.group(3)),
+                             int(m.group(2)))
+    else:
+        logging.error("Unparseable date: " + date)
+
+
 class ParsedAbholCSV:
 
     """A class representing a parsed CSV file"""
-
-    def utf_8_csv_reader(csv_data, dialect=csv.excel, **kwargs):
-        csv_reader = csv.reader(csv_data,
-                                dialect=dialect, **kwargs)
-
-        for row in csv_reader:
-            yield [unicode(cell, 'utf-8') for cell in row]
-
-    def month_for_name_de(name):
-        try:
-            return self.month_for_name_de_dict[name]
-        except KeyError:
-            logging.error("Unknown month %s (%s), assuming this means March."
-                          % (name,
-                             ":".join("{0:x}".format(ord(c)) for c in name)))
-            return 3
-
-    def parse_date(date):
-
-        m = re.match(r'^(\d+)-(\d\d)-(\d\d)$', date)
-        if m:
-            return datetime.date(int(m.group(1)),
-                                 int(m.group(2)), int(m.group(3)))
-        m = re.match(r'^(..), (\d+)\. ([A-Z].+) (\d+)$', date)
-        if m:
-            return datetime.date(int(m.group(4)),
-                                 month_for_name_de(m.group(3)),
-                                 int(m.group(2)))
-        else:
-            logging.error("Unparseable date: " + date)
 
     def __init__(self, type, url=None, reader=None):
 
