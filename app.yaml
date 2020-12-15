@@ -27,6 +27,11 @@ handlers:
 - url: /css
   static_dir: css
 
+- url: /robots.txt
+  static_files: static/robots.txt
+  mime_type: text/plain
+  upload: static/robots.txt
+
 - url: /.*
   script: zrcal.app
 
