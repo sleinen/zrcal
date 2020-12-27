@@ -143,7 +143,18 @@ type_to_id_2020 = dict({
     'sonderabfall':  'ec7c2ce9-b27f-4c27-bbb8-c9e818d90b07',
     # 'sammelstellen': 'b283fb6a-1ad4-4472-bcf9-0d3f135778b7',
 })
-type_to_id = type_to_id_2020
+type_to_id_2021 = dict({
+    'papier':        ['266fe85f-3ae0-466a-b6f5-2a8e663893cc', 'b2db05de-beac-437f-9876-a3d94c3270f0'],
+    'kehricht':      ['ddc5c2fd-c730-4d55-a88c-69bbe6d5a37e', 'ded0fe8d-74cc-43dc-aeb0-39ec878e2dbc'],
+    'karton':        ['e8be896b-8aea-40b7-b042-961273576cd3', '2ae3e825-5b5f-47fd-9838-035f9d625d0e'],
+    'gartenabfall':  ['e785a87c-0233-47e9-9a1a-32034e82f519', '65c9778f-2d03-4750-839e-730f68b5d00d'],
+    'eTram':         ['88a9bb1b-65db-4b30-a74a-188b0a61b3da', 'e73d06ee-caf0-4057-bc65-41ff99849c8e'],
+    'cargotram':     ['43f4613a-f0c2-4036-8902-77a784bde746', 'fa30c8b4-0478-4c0d-a43d-a9a95bb27e70'],
+    'textilien':     ['a47e92c9-8e0a-454d-8c4e-2e4d7f6c87b3', '00832eda-1436-4f54-af53-9e1f18fea4a7'],
+    'sonderabfall':  ['2886fe2d-9acf-48c3-8414-d4ee6af7460a', '8b9bc1df-84fb-47b7-9d2b-b6a1bc1ccc62'],
+    # 'sammelstellen': ['c6c008f4-67b0-4106-a6f1-a2a61c5f890b', '0d59fc55-08df-45ed-a740-a7c4d7b78c2e'],
+})
+type_to_id = type_to_id_2021
 
 known_types = type_to_id.keys()
 known_types.sort()
@@ -183,12 +194,18 @@ class GetMeta(BaseHandler):
                                 .find_all('a'))
 
 
-def type_to_csv_url(type):
+def type_to_csv_url(type, year=''):
     dstype = type_to_dstype(type)
     foo = 'bioabfall' if type == 'gartenabfall' else type
-    return 'https://data.stadt-zuerich.ch/' \
-        + 'dataset/%s_%s/resource/%s/download/%s%s2018.csv' \
-        % (dstype, type, type_to_id[type], dstype, string.lower(foo))
+    id = type_to_id[type]
+    if isinstance(id, list):
+        return 'https://data.stadt-zuerich.ch/' \
+            + 'dataset/%s/resource/%s/download/%s_%s%s.csv' \
+            % (id[0], id[1], dstype, string.lower(foo), year)
+    else:
+        return 'https://data.stadt-zuerich.ch/' \
+            + 'dataset/%s_%s/resource/%s/download/%s%s.csv' \
+            % (dstype, type, id, dstype, string.lower(foo))
 
 
 class MainPage(BaseHandler):
