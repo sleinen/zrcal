@@ -75,16 +75,8 @@ class OGDZMetaPage(db.Model):
                 return None
 
 
-def type_to_dstype(type):
-    if type == 'sammelstellen':
-        return 'entsorgung'
-    else:
-        return 'entsorgungskalender'
-
-
 def meta_url(type):
-    dstype = type_to_dstype(type)
-    return 'https://data.stadt-zuerich.ch/dataset/%s-%s' % (dstype, type)
+    return 'https://data.stadt-zuerich.ch/dataset/erz_entsorgungskalender_%s' % (type)
 
 
 type_to_id_2016 = dict({
@@ -194,18 +186,17 @@ class GetMeta(BaseHandler):
                                 .find_all('a'))
 
 
-def type_to_csv_url(type, year=''):
-    dstype = type_to_dstype(type)
+def type_to_csv_url(type):
     foo = 'bioabfall' if type == 'gartenabfall' else type
     id = type_to_id[type]
     if isinstance(id, list):
         return 'https://data.stadt-zuerich.ch/' \
-            + 'dataset/%s/resource/%s/download/%s_%s%s.csv' \
-            % (id[0], id[1], dstype, string.lower(foo), year)
+            + 'dataset/%s/resource/%s/download/entsorgungskalender_%s.csv' \
+            % (id[0], id[1], string.lower(foo))
     else:
         return 'https://data.stadt-zuerich.ch/' \
-            + 'dataset/%s_%s/resource/%s/download/%s%s.csv' \
-            % (dstype, type, id, dstype, string.lower(foo))
+            + 'dataset/entsorgungskalender_%s/resource/%s/download/%s.csv' \
+            % (type, id, string.lower(foo))
 
 
 class MainPage(BaseHandler):
