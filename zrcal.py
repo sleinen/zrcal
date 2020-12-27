@@ -320,16 +320,16 @@ class ParsedAbholCSV:
     def __init__(self, type, url=None, reader=None):
 
         self.month_for_name_de_dict = dict({
-            u"Januar":	  1,
-            u"Februar":	  2,
-            u"März":	  3,
-            u"April":	  4,
-            u"Mai":	  5,
-            u"Juni":	  6,
-            u"Juli":	  7,
-            u"August":	  8,
+            u"Januar":    1,
+            u"Februar":   2,
+            u"März":      3,
+            u"April":     4,
+            u"Mai":       5,
+            u"Juni":      6,
+            u"Juli":      7,
+            u"August":    8,
             u"September": 9,
-            u"Oktober":	 10,
+            u"Oktober":  10,
             u"November": 11,
             u"Dezember": 12,
         })
