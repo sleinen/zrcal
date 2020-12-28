@@ -16,7 +16,6 @@ from webapp2_extras import jinja2, i18n
 from google.appengine.ext import db
 from google.appengine.ext.webapp.util import run_wsgi_app
 import icalendar
-from bs4 import BeautifulSoup
 
 
 ZIPS = [8001, 8002, 8003, 8004, 8005, 8006, 8008,
@@ -47,36 +46,6 @@ class Abfuhr(db.Model):
             event.add('location', str(self.zip),
                    parameters=params)
         return event
-
-
-class OGDZMetaPage(db.Model):
-    type = db.StringProperty(required=True)
-    url = db.StringProperty(required=True)
-    fetch_date = db.DateTimeProperty(auto_now=True)
-    data_url = db.StringProperty(required=False)
-    contents = db.BlobProperty(required=True)
-
-    @classmethod
-    def get_meta_page(cls, type, url):
-        meta = db.get(db.Key.from_path(cls.__name__, type))
-        if meta:
-            return meta.contents
-        else:
-            try:
-                meta = cls(key_name=type,
-                           type=type,
-                           url=url,
-                           contents=urllib2.urlopen(url).read())
-                meta.put()
-                return meta.contents
-            except urllib2.HTTPError:
-                logging.error("HTTP error opening URL {}".
-                              format(url))
-                return None
-
-
-def meta_url(type):
-    return 'https://data.stadt-zuerich.ch/dataset/erz_entsorgungskalender_%s' % (type)
 
 
 type_to_id_2016 = dict({
@@ -163,27 +132,6 @@ class BaseHandler(webapp2.RequestHandler):
         # Renders a template and writes the result to the response.
         rv = self.jinja2.render_template(_template, **context)
         self.response.write(rv)
-
-
-class GetMeta(BaseHandler):
-    def get(self):
-        type = self.request.get('type')
-        # self.response.charset = 'utf-8'
-        url = meta_url(type)
-        html = OGDZMetaPage.get_meta_page(type, url)
-        if html is None:
-            self.response.write("Error loading meta page</br>")
-            self.response.write("URL: {}</br>".format(url))
-        else:
-            self.response.write("URL: {}</br>".format(url))
-            html = html.decode('utf-8')
-            soup = BeautifulSoup(html, "lxml")
-            self.response.write("Title: " + soup.title.string + "<br />\n")
-            self.response.write("Description: ")
-            # self.response.write(soup.find(id='description'))
-            self.response.write("Download: ")
-            self.response.write(soup.find(id='dataset-resources')
-                                .find_all('a'))
 
 
 def type_to_csv_url(type):
@@ -412,5 +360,4 @@ app = webapp2.WSGIApplication([
         webapp2.Route('/<zip:\d{4}>/<types:.*>', handler=GetCal, name='ical'),
         ('/', MainPage),
         ('/load-calendar', LoadCalendarPage),
-        ('/meta-page', GetMeta),
         ], debug=True, config=config)

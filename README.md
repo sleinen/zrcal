@@ -14,7 +14,6 @@ This application can be deployed on Google App Engine under the Python
 2.7 runtime.  Beyond what is offered by that environment, the
 following libraries need to be uploaded:
 
-- bs4 (BeautifulSoup)
 - dateutil (required by icalendar)
 - icalendar
 
