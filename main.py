@@ -5,7 +5,7 @@
 #
 import datetime
 import string
-import urllib2
+from urllib2 import urlopen
 import wsgiref.handlers
 import re
 import csv
@@ -13,7 +13,7 @@ import os
 import logging
 import webapp2
 from webapp2_extras import jinja2, i18n
-from google.appengine.ext import db
+from google.appengine.ext import ndb
 from google.appengine.ext.webapp.util import run_wsgi_app
 import icalendar
 
@@ -27,11 +27,11 @@ GA_ID = 'UA-33259788-1'
 GOOGLE_AD_CLIENT = 'ca-pub-6118177449333262'
 
 
-class Abfuhr(db.Model):
-    zip = db.IntegerProperty(required=True)
-    type = db.StringProperty(required=True)
-    loc = db.StringProperty(required=False)
-    date = db.DateProperty(required=True, indexed=True)
+class Abfuhr(ndb.Model):
+    zip = ndb.IntegerProperty(required=True)
+    type = ndb.StringProperty(required=True)
+    loc = ndb.StringProperty(required=False)
+    date = ndb.DateProperty(required=True, indexed=True)
 
     def to_icalendar_event(self):
         event = icalendar.Event()
@@ -117,8 +117,7 @@ type_to_id_2021 = dict({
 })
 type_to_id = type_to_id_2021
 
-known_types = type_to_id.keys()
-known_types.sort()
+known_types = sorted(type_to_id.keys())
 
 
 class BaseHandler(webapp2.RequestHandler):
@@ -197,10 +196,9 @@ class GetCal(BaseHandler):
                            + 'basierend auf Open Government Data '
                            + 'der Stadt Zürich—https://data.stadt-zuerich.ch/')
                      % (zip), self.request)
-        for ret in db.GqlQuery('SELECT * from Abfuhr '
-                               'WHERE zip = :1 '
-                               'ORDER BY date',
-                               zip):
+        for ret in Abfuhr.query() \
+                         .filter(Abfuhr.zip == zip) \
+                         .order(Abfuhr.date, Abfuhr.type):
             if ret.type in types:
                 cal.add_component(ret.to_icalendar_event())
         self.response.write(cal.to_ical())
@@ -292,8 +290,7 @@ class ParsedAbholCSV:
             url = type_to_csv_url(type)
         if reader is None:
             logging.warn("Trying to retrieve %s" % (url))
-            reader = utf_8_csv_reader(urllib2.urlopen(url),
-                                      dialect=csv.excel)
+            reader = utf_8_csv_reader(urlopen(url), dialect=csv.excel)
 
         header = reader.next()
 
@@ -343,10 +340,13 @@ class ParsedAbholCSV:
                           % (url, type, len(header), header))
 
     def store(self):
-        db.delete(db.GqlQuery("SELECT * FROM Abfuhr WHERE " +
-                              " type = :1 AND date >= :2 AND date <= :3",
-                              self.type, self.earliest_date, self.latest_date))
-        db.put(self.models)
+        ndb.delete_multi(
+            Abfuhr.query() \
+            .filter(Abfuhr.type == self.type) \
+            .filter(Abfuhr.date >= self.earliest_date) \
+            .filter(Abfuhr.date <= self.latest_date) \
+            .fetch(keys_only=True))
+        ndb.put_multi(self.models)
 
     def size(self):
         return len(self.models)

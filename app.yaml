@@ -3,8 +3,6 @@ api_version: 1
 threadsafe: true
 
 libraries:
-- name: six
-  version: "1.9.0"
 - name: setuptools
   version: "36.6.0"
 - name: jinja2
@@ -31,7 +29,7 @@ handlers:
   upload: static/robots.txt
 
 - url: /.*
-  script: zrcal.app
+  script: main.app
 
 env_variables:
   DJANGO_SETTINGS_MODULE: 'settings'
