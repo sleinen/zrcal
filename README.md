@@ -10,15 +10,8 @@ in common calendar tools.
 
 ## INSTALLATION
 
-This application can be deployed on Google App Engine under the Python
-2.7 runtime.  Beyond what is offered by that environment, the
-following libraries need to be uploaded:
-
-- dateutil (required by icalendar)
-- icalendar
-
-This can be done by installing them in the `lib` subdirectory using
-`pip install -t lib/ bs4`, etc.
+This application can be deployed on Google App Engine.  See below for
+instructions.
 
 Copyright (c) Simon Leinen, 2012 - 2020
 
@@ -34,22 +27,47 @@ published, and it always takes me some time to get started again.
 ### Update Development Tools
 
 ```bash
+gcloud components app-engine-python
+gcloud components app-engine-python-extras
+gcloud components cloud-datastore-emulator
 gcloud components update
 ```
+
+### Create venv (Python 3.x)
+
+```bash
+python3 -m venv venv_py3
+source venv_py3/bin/activate
+pip install -U -r requirements.txt
+```
+
+### Start Local Datastore Emulator
+
+```bash
+gcloud beta emulators datastore start
+eval $(gcloud beta emulators datastore env-init)
+```
+
+#### Alternatively: Authenticate to Datastore Service
+
+You can omit these steps and set the `GOOGLE_APPLICATION_CREDENTIALS`
+environment variable instead (see
+[instructions](https://cloud.google.com/datastore/docs/reference/libraries#command-line))
+to let the development application access the live datastore.  This is
+a bit dangerous in that operations that modify the datastore
+(e.g. `/load-calendar`) will affect the live application.
 
 ### Start Development Server
 
 ```bash
-dev_appserver app.yaml
+FLASK_APP=main app.yaml FLASK_DEBUG=1 flask run
 ```
 
-Now you can see the Web UI under http://localhost:8080, and the local
-datastore under
-[http://localhost:8000/datastore](http://localhost:8000/datastore).
+Now you can see the Web UI under http://localhost:5000.
 
 ### Load Some Data
 
-Surf to `http://localhost:8080/load-calendar`
+Surf to `http://localhost:5000/load-calendar`
 
 Ideally, this will take a long time, and eventually show a summary of
 the data that has been loaded.  Or you get an error message, in which
@@ -60,7 +78,7 @@ again.
 ### Play Around a Bit
 
 In particular, load a random recycling calendar,
-e.g. `http://localhost:8080/8006`.  If the result looks correct, and
+e.g. `http://localhost:5000/8006`.  If the result looks correct, and
 includes the recently loaded dates, it is likely that the application
 mostly works.
 

@@ -1,20 +1,4 @@
-runtime: python27
-api_version: 1
-threadsafe: true
-
-libraries:
-- name: six
-  version: "1.9.0"
-- name: setuptools
-  version: "36.6.0"
-- name: jinja2
-  version: "2.6"
-- name: markupsafe
-  version: "0.23"
-- name: pytz
-  version: "2017.3"
-- name: webapp2
-  version: "2.5.2"
+runtime: python39
 
 handlers:
 - url: /(favicon.ico)
@@ -31,7 +15,4 @@ handlers:
   upload: static/robots.txt
 
 - url: /.*
-  script: zrcal.app
-
-env_variables:
-  DJANGO_SETTINGS_MODULE: 'settings'
+  script: auto
