@@ -34,6 +34,9 @@ published, and it always takes me some time to get started again.
 ### Update Development Tools
 
 ```bash
+gcloud components app-engine-python
+gcloud components app-engine-python-extras
+gcloud components cloud-datastore-emulator
 gcloud components update
 ```
 
@@ -45,19 +48,25 @@ source venv_py2/bin/activate
 pip install -U -r requirements.txt
 ```
 
+### Start Local Datastore Emulator
+
+```bash
+gcloud beta emulators datastore start
+eval $(gcloud beta emulators datastore env-init)
+```
+
+You can omit these steps, but note that unlike with previous versions,
+even the development application will then use the live datastore.
+This is a bit dangerous in that operations that modify the datastore
+(e.g. `/load-calendar`) will affect the live application.
+
 ### Start Development Server
 
 ```bash
 FLASK_APP=main app.yaml FLASK_DEBUG=1 flask run
 ```
 
-Now you can see the Web UI under http://localhost:5000.  Note that
-unlike with previous versions, even the development application will
-be using the live datastore.  This is a bit dangerous in that
-operations that modify the datastore (e.g. `/load-calendar`) will
-affect the live application.  Supposedly we could use a local Google
-Datastore emulator, or a development database, but I haven't gotten to
-trying that.
+Now you can see the Web UI under http://localhost:5000.
 
 ### Load Some Data
 
