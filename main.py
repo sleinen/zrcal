@@ -7,7 +7,7 @@ from flask import Flask, request, Response, render_template
 from flask_babel import Babel
 import datetime
 import string
-from urllib2 import urlopen
+from urllib.request import urlopen
 import re
 import csv
 import os
@@ -154,10 +154,10 @@ def type_to_csv_url(type):
     id = type_to_id[type]
     if isinstance(id, list):
         return OGD_TMPL_2.format(
-            id[0], id[1], string.lower(foo))
+            id[0], id[1], foo.lower())
     else:
         return OGD_TMPL_1.format(
-            type, id, string.lower(foo))
+            type, id, foo.lower())
 
 
 @app.route('/')
