@@ -143,17 +143,21 @@ type_to_id = type_to_id_2021
 known_types = sorted(type_to_id.keys())
 
 
+OGD_ROOT = 'https://data.stadt-zuerich.ch/'
+OGD_BASE = OGD_ROOT + 'dataset/'
+OGD_TMPL_1 = OGD_BASE + 'entsorgungskalender_{}/resource/{}/download/{}.csv'
+OGD_TMPL_2 = OGD_BASE + '{}/resource/{}/download/entsorgungskalender_{}.csv'
+
+
 def type_to_csv_url(type):
     foo = 'bioabfall' if type == 'gartenabfall' else type
     id = type_to_id[type]
     if isinstance(id, list):
-        return 'https://data.stadt-zuerich.ch/' \
-            + 'dataset/%s/resource/%s/download/entsorgungskalender_%s.csv' \
-            % (id[0], id[1], string.lower(foo))
+        return OGD_TMPL_2.format(
+            id[0], id[1], string.lower(foo))
     else:
-        return 'https://data.stadt-zuerich.ch/' \
-            + 'dataset/entsorgungskalender_%s/resource/%s/download/%s.csv' \
-            % (type, id, string.lower(foo))
+        return OGD_TMPL_1.format(
+            type, id, string.lower(foo))
 
 
 @app.route('/')
@@ -197,12 +201,13 @@ def get_cal(zip=None, types=None):
     cal = icalendar.Calendar()
     cal.add('prodid', '-//zrcal//leinen.ch//')
     cal.add('version', '2.0')
-    cal_add_name(cal, 'Entsorgung %d' % (zip), request)
-    cal_add_desc(cal, ('Entsorgungskalender für PLZ %d.  '
+    cal_add_name(cal, 'Entsorgung {}'.format(zip), request)
+    cal_add_desc(cal, ('Entsorgungskalender für PLZ {}.  '
                        + 'Erzeugt von http://zrcal.leinen.ch/ '
                        + 'basierend auf Open Government Data '
-                       + 'der Stadt Zürich—https://data.stadt-zuerich.ch/')
-                 % (zip), request)
+                       + 'der Stadt Zürich—{}').format(
+                           zip, OGD_ROOT),
+                 request)
     for ret in Abfuhr.query() \
                      .filter(Abfuhr.zip == zip) \
                      .order(Abfuhr.date):  # .order(Abfuhr.date, Abfuhr.type):
@@ -234,7 +239,7 @@ def load_calendar():
                 '<a href="{}">{}</a>: {}<br />\n'.format(
                     type_to_csv_url(type), type, parsed.size())
         except KeyError:
-            logging.error("Unknown URL for %s" % (type))
+            logging.error("Unknown URL for {}".format(type))
             result = result + 'Unknown URL for {}'.format(type)
     return result
 
@@ -251,9 +256,9 @@ def month_for_name_de(name):
     try:
         return self.month_for_name_de_dict[name]
     except KeyError:
-        logging.error("Unknown month %s (%s), assuming this means March."
-                      % (name,
-                         ":".join("{0:x}".format(ord(c)) for c in name)))
+        logging.error("Unknown month {} ({}), guessing March.".format(
+            name,
+            ":".join("{0:x}".format(ord(c)) for c in name)))
         return 3
 
 
@@ -302,7 +307,7 @@ class ParsedAbholCSV:
         if url is None:
             url = type_to_csv_url(type)
         if reader is None:
-            logging.warn("Trying to retrieve %s" % (url))
+            logging.warn("Trying to retrieve {}".format(url))
             reader = utf_8_csv_reader(urlopen(url), dialect=csv.excel)
 
         header = reader.next()
@@ -321,7 +326,7 @@ class ParsedAbholCSV:
                     plz, date = row
                     d = parse_date(date)
                     if plz == '':
-                        logging.warn("Missing PLZ in %s" % (url))
+                        logging.warn("Missing PLZ in {}".format(url))
                     else:
                         self.models.append(
                             Abfuhr(zip=int(plz), type=type, date=d))
@@ -348,9 +353,9 @@ class ParsedAbholCSV:
                     # self.models.append(
                     #     Abfuhr(zip = int(plz), type = type, date = d))
         else:
-            logging.error("URL %s for type %s" +
-                          " has %d columns (%s) - cannot understand."
-                          % (url, type, len(header), header))
+            logging.error(("URL {} for type {}" +
+                           " has {} columns ({}) - cannot understand.").format(
+                               url, type, len(header), header))
 
     def store(self):
         ndb.delete_multi(
