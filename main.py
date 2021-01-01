@@ -217,6 +217,7 @@ def get_cal(zip=None, types=None):
 
 @app.route('/load-calendar')
 def load_calendar():
+    result = ''
     if request.args.get('types'):
         types = request.args.get('types').split(' ')
     else:
@@ -229,11 +230,13 @@ def load_calendar():
             parsed = ParsedAbholCSV(type)
             parsed.store()
 
-            return "<a href=\"%s\">%s</a>: %s<br />\n" \
-                % (type_to_csv_url(type), type, parsed.size())
+            result = result + \
+                '<a href="{}">{}</a>: {}<br />\n'.format(
+                    type_to_csv_url(type), type, parsed.size())
         except KeyError:
             logging.error("Unknown URL for %s" % (type))
-            return 'Unknown URL for %s' % (type)
+            result = result + 'Unknown URL for {}'.format(type)
+    return result
 
 
 def utf_8_csv_reader(csv_data, dialect=csv.excel, **kwargs):
