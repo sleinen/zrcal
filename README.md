@@ -81,7 +81,6 @@ mostly works.
 ## Deploy
 
 ```bash
-pip install -U -t lib -r requirements.txt
 gcloud app deploy
 ```
 
