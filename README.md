@@ -48,9 +48,13 @@ gcloud beta emulators datastore start
 eval $(gcloud beta emulators datastore env-init)
 ```
 
-You can omit these steps, but note that unlike with previous versions,
-even the development application will then use the live datastore.
-This is a bit dangerous in that operations that modify the datastore
+#### Alternatively: Authenticate to Datastore Service
+
+You can omit these steps and set the `GOOGLE_APPLICATION_CREDENTIALS`
+environment variable instead (see
+[instructions](https://cloud.google.com/datastore/docs/reference/libraries#command-line))
+to let the development application access the live datastore.  This is
+a bit dangerous in that operations that modify the datastore
 (e.g. `/load-calendar`) will affect the live application.
 
 ### Start Development Server
