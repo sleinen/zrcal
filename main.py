@@ -3,18 +3,16 @@
 # This tool generates personalized calendars based on
 # Open Government Data.
 #
+from flask import Flask, request, Response, render_template
+from flask_babel import Babel
 import datetime
 import string
 from urllib2 import urlopen
-import wsgiref.handlers
 import re
 import csv
 import os
 import logging
-import webapp2
-from webapp2_extras import jinja2, i18n
-from google.appengine.ext import ndb
-from google.appengine.ext.webapp.util import run_wsgi_app
+from google.cloud import ndb
 import icalendar
 
 
@@ -25,6 +23,22 @@ ZIPS = [8001, 8002, 8003, 8004, 8005, 8006, 8008,
 
 GA_ID = 'UA-33259788-1'
 GOOGLE_AD_CLIENT = 'ca-pub-6118177449333262'
+
+app = Flask(__name__)
+ds_client = ndb.Client()
+
+
+def ndb_wsgi_middleware(wsgi_app):
+    def middleware(environ, start_response):
+        with ds_client.context():
+            return wsgi_app(environ, start_response)
+
+    return middleware
+
+
+app.wsgi_app = ndb_wsgi_middleware(app.wsgi_app)  # Wrap the app in middleware.
+
+babel = Babel(app)
 
 
 class Abfuhr(ndb.Model):
@@ -41,10 +55,10 @@ class Abfuhr(ndb.Model):
             event.add('dtstart', self.date)
         if self.loc:
             event.add('location', self.loc + ', ' + str(self.zip),
-                   parameters=params)
+                      parameters=params)
         else:
             event.add('location', str(self.zip),
-                   parameters=params)
+                      parameters=params)
         return event
 
 
@@ -105,32 +119,28 @@ type_to_id_2020 = dict({
     # 'sammelstellen': 'b283fb6a-1ad4-4472-bcf9-0d3f135778b7',
 })
 type_to_id_2021 = dict({
-    'papier':        ['266fe85f-3ae0-466a-b6f5-2a8e663893cc', 'b2db05de-beac-437f-9876-a3d94c3270f0'],
-    'kehricht':      ['ddc5c2fd-c730-4d55-a88c-69bbe6d5a37e', 'ded0fe8d-74cc-43dc-aeb0-39ec878e2dbc'],
-    'karton':        ['e8be896b-8aea-40b7-b042-961273576cd3', '2ae3e825-5b5f-47fd-9838-035f9d625d0e'],
-    'gartenabfall':  ['e785a87c-0233-47e9-9a1a-32034e82f519', '65c9778f-2d03-4750-839e-730f68b5d00d'],
-    'eTram':         ['88a9bb1b-65db-4b30-a74a-188b0a61b3da', 'e73d06ee-caf0-4057-bc65-41ff99849c8e'],
-    'cargotram':     ['43f4613a-f0c2-4036-8902-77a784bde746', 'fa30c8b4-0478-4c0d-a43d-a9a95bb27e70'],
-    'textilien':     ['a47e92c9-8e0a-454d-8c4e-2e4d7f6c87b3', '00832eda-1436-4f54-af53-9e1f18fea4a7'],
-    'sonderabfall':  ['2886fe2d-9acf-48c3-8414-d4ee6af7460a', '8b9bc1df-84fb-47b7-9d2b-b6a1bc1ccc62'],
-    # 'sammelstellen': ['c6c008f4-67b0-4106-a6f1-a2a61c5f890b', '0d59fc55-08df-45ed-a740-a7c4d7b78c2e'],
+    'papier':        ['266fe85f-3ae0-466a-b6f5-2a8e663893cc',
+                      'b2db05de-beac-437f-9876-a3d94c3270f0'],
+    'kehricht':      ['ddc5c2fd-c730-4d55-a88c-69bbe6d5a37e',
+                      'ded0fe8d-74cc-43dc-aeb0-39ec878e2dbc'],
+    'karton':        ['e8be896b-8aea-40b7-b042-961273576cd3',
+                      '2ae3e825-5b5f-47fd-9838-035f9d625d0e'],
+    'gartenabfall':  ['e785a87c-0233-47e9-9a1a-32034e82f519',
+                      '65c9778f-2d03-4750-839e-730f68b5d00d'],
+    'eTram':         ['88a9bb1b-65db-4b30-a74a-188b0a61b3da',
+                      'e73d06ee-caf0-4057-bc65-41ff99849c8e'],
+    'cargotram':     ['43f4613a-f0c2-4036-8902-77a784bde746',
+                      'fa30c8b4-0478-4c0d-a43d-a9a95bb27e70'],
+    'textilien':     ['a47e92c9-8e0a-454d-8c4e-2e4d7f6c87b3',
+                      '00832eda-1436-4f54-af53-9e1f18fea4a7'],
+    'sonderabfall':  ['2886fe2d-9acf-48c3-8414-d4ee6af7460a',
+                      '8b9bc1df-84fb-47b7-9d2b-b6a1bc1ccc62'],
+    # 'sammelstellen': ['c6c008f4-67b0-4106-a6f1-a2a61c5f890b',
+    #                     '0d59fc55-08df-45ed-a740-a7c4d7b78c2e'],
 })
 type_to_id = type_to_id_2021
 
 known_types = sorted(type_to_id.keys())
-
-
-class BaseHandler(webapp2.RequestHandler):
-
-    @webapp2.cached_property
-    def jinja2(self):
-        # Returns a Jinja2 renderer cached in the app registry.
-        return jinja2.get_jinja2(app=self.app)
-
-    def render_response(self, _template, **context):
-        # Renders a template and writes the result to the response.
-        rv = self.jinja2.render_template(_template, **context)
-        self.response.write(rv)
 
 
 def type_to_csv_url(type):
@@ -146,12 +156,12 @@ def type_to_csv_url(type):
             % (type, id, string.lower(foo))
 
 
-class MainPage(BaseHandler):
-    def get(self):
-        context = {'zips': ZIPS,
-                   'ga_id': GA_ID,
-                   'google_ad_client': GOOGLE_AD_CLIENT}
-        self.render_response('index.html', **context)
+@app.route('/')
+def get_index():
+    return render_template('index.html',
+                           zips=ZIPS,
+                           ga_id=GA_ID,
+                           google_ad_client=GOOGLE_AD_CLIENT)
 
 
 def cal_add_name(cal, name, req):
@@ -170,60 +180,60 @@ def cal_add_desc(cal, desc, req):
     cal.add('DESCRIPTION', desc, parameters=params)
 
 
-class GetCal(BaseHandler):
-    def get(self, zip=None, types=None):
-        if types is None:
-            if self.request.get('types'):
-                types = self.request.get('types').split(' ')
-            else:
-                types = known_types
+@app.route('/<int:zip>')
+@app.route('/<int:zip>/<types>')
+def get_cal(zip=None, types=None):
+    if types is None:
+        if request.args.get('types'):
+            types = request.args.get('types').split(' ')
         else:
-            types = types.split('+')
-        if zip is None:
-            zip = int(self.request.get('zip'))
-        else:
-            zip = int(zip)
-        self.response.headers['Content-Type'] = \
-            'text/calendar; charset="utf-8"'
-        self.response.headers['Content-Disposition'] = \
-            'attachment; filename=' + 'zrcal-' + str(zip) + '.ics'
-        cal = icalendar.Calendar()
-        cal.add('prodid', '-//zrcal//leinen.ch//')
-        cal.add('version', '2.0')
-        cal_add_name(cal, 'Entsorgung %d' % (zip), self.request)
-        cal_add_desc(cal, ('Entsorgungskalender für PLZ %d.  '
-                           + 'Erzeugt von http://zrcal.leinen.ch/ '
-                           + 'basierend auf Open Government Data '
-                           + 'der Stadt Zürich—https://data.stadt-zuerich.ch/')
-                     % (zip), self.request)
-        for ret in Abfuhr.query() \
-                         .filter(Abfuhr.zip == zip) \
-                         .order(Abfuhr.date, Abfuhr.type):
-            if ret.type in types:
-                cal.add_component(ret.to_icalendar_event())
-        self.response.write(cal.to_ical())
+            types = known_types
+    else:
+        types = types.split('+')
+    if zip is None:
+        zip = int(request.args.get('zip'))
+    else:
+        zip = int(zip)
+    cal = icalendar.Calendar()
+    cal.add('prodid', '-//zrcal//leinen.ch//')
+    cal.add('version', '2.0')
+    cal_add_name(cal, 'Entsorgung %d' % (zip), request)
+    cal_add_desc(cal, ('Entsorgungskalender für PLZ %d.  '
+                       + 'Erzeugt von http://zrcal.leinen.ch/ '
+                       + 'basierend auf Open Government Data '
+                       + 'der Stadt Zürich—https://data.stadt-zuerich.ch/')
+                 % (zip), request)
+    for ret in Abfuhr.query() \
+                     .filter(Abfuhr.zip == zip) \
+                     .order(Abfuhr.date):  # .order(Abfuhr.date, Abfuhr.type):
+        if ret.type in types:
+            cal.add_component(ret.to_icalendar_event())
+    return Response(cal.to_ical(),
+                    content_type='text/calendar; charset="utf-8"',
+                    headers={'Content-Disposition': 'attachment; filename='
+                             + 'zrcal-' + str(zip) + '.ics'}
+                    )
 
 
-class LoadCalendarPage(BaseHandler):
-    def get(self):
-        if self.request.get('types'):
-            types = self.request.get('types').split(' ')
+@app.route('/load-calendar')
+def load_calendar():
+    if request.args.get('types'):
+        types = request.args.get('types').split(' ')
+    else:
+        if request.args.get('type'):
+            types = [request.args.get('type')]
         else:
-            if self.request.get('type'):
-                types = [self.request.get('type')]
-            else:
-                types = known_types
-        for type in types:
-            try:
-                parsed = ParsedAbholCSV(type)
-                parsed.store()
+            types = known_types
+    for type in types:
+        try:
+            parsed = ParsedAbholCSV(type)
+            parsed.store()
 
-                self.response.write("<a href=\"%s\">%s</a>: %s<br />\n"
-                                    % (type_to_csv_url(type), type,
-                                       parsed.size()))
-            except KeyError:
-                logging.error("Unknown URL for %s" % (type))
-                self.response.write('Unknown URL for %s' % (type))
+            return "<a href=\"%s\">%s</a>: %s<br />\n" \
+                % (type_to_csv_url(type), type, parsed.size())
+        except KeyError:
+            logging.error("Unknown URL for %s" % (type))
+            return 'Unknown URL for %s' % (type)
 
 
 def utf_8_csv_reader(csv_data, dialect=csv.excel, **kwargs):
@@ -341,23 +351,12 @@ class ParsedAbholCSV:
 
     def store(self):
         ndb.delete_multi(
-            Abfuhr.query() \
-            .filter(Abfuhr.type == self.type) \
-            .filter(Abfuhr.date >= self.earliest_date) \
-            .filter(Abfuhr.date <= self.latest_date) \
+            Abfuhr.query()
+            .filter(Abfuhr.type == self.type)
+            .filter(Abfuhr.date >= self.earliest_date)
+            .filter(Abfuhr.date <= self.latest_date)
             .fetch(keys_only=True))
         ndb.put_multi(self.models)
 
     def size(self):
         return len(self.models)
-
-
-config = {'webapp2_extras.jinja2': {
-    'template_path': 'templates',
-    'environment_args': {'extensions': ['jinja2.ext.i18n']}}}
-app = webapp2.WSGIApplication([
-        webapp2.Route('/<zip:\d{4}>', handler=GetCal, name='ical'),
-        webapp2.Route('/<zip:\d{4}>/<types:.*>', handler=GetCal, name='ical'),
-        ('/', MainPage),
-        ('/load-calendar', LoadCalendarPage),
-        ], debug=True, config=config)

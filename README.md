@@ -37,19 +37,31 @@ published, and it always takes me some time to get started again.
 gcloud components update
 ```
 
+### Create venv (Python 2.7)
+
+```bash
+virtualenv -p python2 venv_py2
+source venv_py2/bin/activate
+pip install -U -r requirements.txt
+```
+
 ### Start Development Server
 
 ```bash
-dev_appserver app.yaml
+FLASK_APP=main app.yaml FLASK_DEBUG=1 flask run
 ```
 
-Now you can see the Web UI under http://localhost:8080, and the local
-datastore under
-[http://localhost:8000/datastore](http://localhost:8000/datastore).
+Now you can see the Web UI under http://localhost:5000.  Note that
+unlike with previous versions, even the development application will
+be using the live datastore.  This is a bit dangerous in that
+operations that modify the datastore (e.g. `/load-calendar`) will
+affect the live application.  Supposedly we could use a local Google
+Datastore emulator, or a development database, but I haven't gotten to
+trying that.
 
 ### Load Some Data
 
-Surf to `http://localhost:8080/load-calendar`
+Surf to `http://localhost:5000/load-calendar`
 
 Ideally, this will take a long time, and eventually show a summary of
 the data that has been loaded.  Or you get an error message, in which
@@ -60,13 +72,14 @@ again.
 ### Play Around a Bit
 
 In particular, load a random recycling calendar,
-e.g. `http://localhost:8080/8006`.  If the result looks correct, and
+e.g. `http://localhost:5000/8006`.  If the result looks correct, and
 includes the recently loaded dates, it is likely that the application
 mostly works.
 
 ## Deploy
 
 ```bash
+pip install -U -t lib -r requirements.txt
 gcloud app deploy
 ```
 

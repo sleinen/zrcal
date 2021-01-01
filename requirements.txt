@@ -1,0 +1,10 @@
+setuptools>=36.6.0
+pytz>=2017.3
+babel>=2.9.0
+googleapis_common_protos
+google-cloud-ndb==1.7.1
+protobuf
+icalendar==4.0.7
+grpcio>=1.0.0
+Flask==1.1.2
+Flask-Babel==1.0.0
