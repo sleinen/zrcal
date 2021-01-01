@@ -16,6 +16,7 @@ cache:
     - venv-py3/
 
 before_script:
+  - apt install -y python3-venv
   - python -V  # Print out python version for debugging
   - python3 -m venv venv-py3
   - source venv-py3/bin/activate
