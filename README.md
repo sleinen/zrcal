@@ -10,15 +10,8 @@ in common calendar tools.
 
 ## INSTALLATION
 
-This application can be deployed on Google App Engine under the Python
-2.7 runtime.  Beyond what is offered by that environment, the
-following libraries need to be uploaded:
-
-- dateutil (required by icalendar)
-- icalendar
-
-This can be done by installing them in the `lib` subdirectory using
-`pip install -t lib/ bs4`, etc.
+This application can be deployed on Google App Engine.  See below for
+instructions.
 
 Copyright (c) Simon Leinen, 2012 - 2020
 
@@ -40,11 +33,11 @@ gcloud components cloud-datastore-emulator
 gcloud components update
 ```
 
-### Create venv (Python 2.7)
+### Create venv (Python 3.x)
 
 ```bash
-virtualenv -p python2 venv_py2
-source venv_py2/bin/activate
+python3 -m venv venv_py3
+source venv_py3/bin/activate
 pip install -U -r requirements.txt
 ```
 

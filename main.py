@@ -10,6 +10,7 @@ import string
 from urllib.request import urlopen
 import re
 import csv
+import codecs
 import os
 import logging
 from google.cloud import ndb
@@ -245,11 +246,8 @@ def load_calendar():
 
 
 def utf_8_csv_reader(csv_data, dialect=csv.excel, **kwargs):
-    csv_reader = csv.reader(csv_data,
-                            dialect=dialect, **kwargs)
-
-    for row in csv_reader:
-        yield [unicode(cell, 'utf-8') for cell in row]
+    return csv.reader(codecs.iterdecode(csv_data, 'utf-8'),
+                      dialect=dialect, **kwargs)
 
 
 def month_for_name_de(name):
@@ -310,7 +308,7 @@ class ParsedAbholCSV:
             logging.warn("Trying to retrieve {}".format(url))
             reader = utf_8_csv_reader(urlopen(url), dialect=csv.excel)
 
-        header = reader.next()
+        header = reader.__next__()
 
         def note_date(date):
             if self.earliest_date is None or self.earliest_date > date:
