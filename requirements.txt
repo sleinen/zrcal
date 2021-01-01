@@ -1,4 +1,4 @@
-setuptools>=36.6.0
+setuptools==36.6.0
 pytz>=2017.3
 babel>=2.9.0
 googleapis_common_protos
