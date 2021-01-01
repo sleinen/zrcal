@@ -1,18 +1,6 @@
 runtime: python39
 
 handlers:
-- url: /(favicon.ico)
-  static_files: static/images/\1
-  mime_type: image/vnd.microsoft.icon
-  upload: static/images/(.*)
-
-- url: /css
-  static_dir: css
-
-- url: /robots.txt
-  static_files: static/robots.txt
-  mime_type: text/plain
-  upload: static/robots.txt
-
 - url: /.*
+  secure: always
   script: auto

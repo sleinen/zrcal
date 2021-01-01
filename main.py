@@ -3,7 +3,8 @@
 # This tool generates personalized calendars based on
 # Open Government Data.
 #
-from flask import Flask, request, Response, render_template
+from flask import Flask, request, Response, render_template, \
+    send_file, send_from_directory
 from flask_babel import Babel
 import datetime
 import string
@@ -23,7 +24,7 @@ ZIPS = [8001, 8002, 8003, 8004, 8005, 8006, 8008,
         8055, 8057, 8064]
 
 GA_ID = 'UA-33259788-1'
-GOOGLE_AD_CLIENT = 'ca-pub-6118177449333262'
+GOOGLE_AD_CLIENT = 'pub-6118177449333262'
 
 app = Flask(__name__)
 ds_client = ndb.Client()
@@ -167,6 +168,28 @@ def get_index():
                            zips=ZIPS,
                            ga_id=GA_ID,
                            google_ad_client=GOOGLE_AD_CLIENT)
+
+
+@app.route('/ads.txt')
+def get_ads():
+    return Response('google.com, {}, DIRECT, f08c47fec0942fa0\n'.format(
+        GOOGLE_AD_CLIENT),
+                    mimetype='text/plain')
+
+
+@app.route('/css/<path:path>')
+def get_css(path=None):
+    return send_from_directory('css', path, mimetype='text/css')
+
+
+@app.route('/robots.txt')
+def get_robots(): return Response('#\n', mimetype='text/plain')
+
+
+@app.route('/favicon.ico')
+def get_favicon(path=None):
+    return send_file('static/images/favicon.ico',
+                     mimetype='image/vnd.microsoft.icon')
 
 
 def cal_add_name(cal, name, req):
