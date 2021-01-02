@@ -15,13 +15,23 @@ cache:
     - .cache/pip
     - venv-py3/
 
-before_script:
-  - apt install -y python3-venv
-  - python -V  # Print out python version for debugging
-  - python3 -m venv venv-py3
-  - source venv-py3/bin/activate
-  - pip install -U -r requirements.txt
+build:
+  stage: build
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
+  script:
+    - mkdir -p /kaniko/.docker
+    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
+    - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --destination $CI_REGISTRY_IMAGE:latest
+  only:
+    changes:
+      Dockerfile
+      requirements.txt
 
 test:
+  stage: test
+  image:
+    name: $CI_REGISTRY_IMAGE:latest
   script:
     - pycodestyle main.py
