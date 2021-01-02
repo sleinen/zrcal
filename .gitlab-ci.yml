@@ -35,3 +35,5 @@ test:
     name: $CI_REGISTRY_IMAGE:latest
   script:
     - pycodestyle main.py
+    - env
+
