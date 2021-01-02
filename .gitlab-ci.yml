@@ -26,8 +26,8 @@ build:
     - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --destination $CI_REGISTRY_IMAGE:latest
   only:
     changes:
-      Dockerfile
-      requirements.txt
+      - Dockerfile
+      - requirements.txt
 
 test:
   stage: test
