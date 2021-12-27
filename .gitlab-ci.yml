@@ -1,0 +1,47 @@
+image: gcr.io/google.com/cloudsdktool/cloud-sdk
+
+# Change pip's cache directory to be inside the project directory since we can
+# only cache local items.
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+# Pip's cache doesn't store the python packages
+# https://pip.pypa.io/en/stable/reference/pip_install/#caching
+#
+# If you want to also cache the installed packages, you have to install
+# them in a virtualenv and cache it as well.
+cache:
+  paths:
+    - .cache/pip
+    - venv-py3/
+
+build:
+  stage: build
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
+  script:
+    - mkdir -p /kaniko/.docker
+    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
+    - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile --destination $CI_REGISTRY_IMAGE:latest
+  only:
+    changes:
+      - Dockerfile
+      - requirements.txt
+
+test:
+
+  services:
+    - name: $CI_REGISTRY_IMAGE:latest
+      alias: datastore-emulator
+      entrypoint: ["gcloud"]
+      command: ["beta emulators datastore start"]
+
+  stage: test
+  image:
+    name: $CI_REGISTRY_IMAGE:latest
+  script:
+    - pycodestyle main.py
+    - env
+    - export DATASTORE_EMULATOR_HOST=datastore-emulator:8081
+    - python3 main.py
