@@ -140,7 +140,18 @@ type_to_id_2021 = dict({
     # 'sammelstellen': ['c6c008f4-67b0-4106-a6f1-a2a61c5f890b',
     #                     '0d59fc55-08df-45ed-a740-a7c4d7b78c2e'],
 })
-type_to_id = type_to_id_2021
+type_to_id_2022 = dict({
+    'papier':        {'year': 2022},
+    'kehricht':      {'year': 2022},
+    'karton':        {'year': 2022},
+    'gartenabfall':  {'year': 2022},
+    'eTram':         {'year': 2022},
+    'cargoTram':     {'year': 2022},
+    # 'textilien':     {'year': 2022}, # not found on 27 December 2021... maybe later?
+    'sonderabfall':  {'year': 2022},
+})
+
+type_to_id = type_to_id_2022
 
 known_types = sorted(type_to_id.keys())
 
@@ -149,6 +160,7 @@ OGD_ROOT = 'https://data.stadt-zuerich.ch/'
 OGD_BASE = OGD_ROOT + 'dataset/'
 OGD_TMPL_1 = OGD_BASE + 'entsorgungskalender_{}/resource/{}/download/{}.csv'
 OGD_TMPL_2 = OGD_BASE + '{}/resource/{}/download/entsorgungskalender_{}.csv'
+OGD_TMPL_3 = OGD_BASE + 'erz_entsorgungskalender_{}/download/entsorgungskalender_{}_{}.csv'
 
 
 def type_to_csv_url(type):
@@ -157,6 +169,9 @@ def type_to_csv_url(type):
     if isinstance(id, list):
         return OGD_TMPL_2.format(
             id[0], id[1], foo.lower())
+    elif isinstance(id, dict):
+        return OGD_TMPL_3.format(
+            foo.lower(), foo, id['year'])
     else:
         return OGD_TMPL_1.format(
             type, id, foo.lower())
