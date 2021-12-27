@@ -30,10 +30,18 @@ build:
       - requirements.txt
 
 test:
+
+  services:
+    - name: $CI_REGISTRY_IMAGE:latest
+      alias: datastore-emulator
+      entrypoint: ["gcloud"]
+      command: ["beta emulators datastore start"]
+
   stage: test
   image:
     name: $CI_REGISTRY_IMAGE:latest
   script:
     - pycodestyle main.py
     - env
-
+    - export DATASTORE_EMULATOR_HOST=datastore-emulator:8081
+    - python3 main.py
