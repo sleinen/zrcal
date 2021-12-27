@@ -1,4 +1,5 @@
 wheel
+gunicorn
 setuptools==40.8.0
 pytz>=2017.3
 babel>=2.9.0

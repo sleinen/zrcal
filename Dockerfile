@@ -1,8 +1,9 @@
-FROM gcr.io/google.com/cloudsdktool/cloud-sdk
+FROM python:3-slim
 
-WORKDIR /build
+WORKDIR /app
 
-COPY requirements.txt .
+COPY . .
 
-RUN python3 -m pip install -U pycodestyle
 RUN python3 -m pip install -U -r requirements.txt
+
+ENTRYPOINT exec gunicorn -b :$PORT -w 2 main:app

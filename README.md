@@ -60,7 +60,7 @@ a bit dangerous in that operations that modify the datastore
 ### Start Development Server
 
 ```bash
-FLASK_APP=main app.yaml FLASK_DEBUG=1 flask run
+FLASK_APP=main FLASK_DEBUG=1 flask run
 ```
 
 Now you can see the Web UI under http://localhost:5000.
