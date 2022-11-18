@@ -8,5 +8,5 @@ google-cloud-ndb==1.7.1
 protobuf
 icalendar==4.0.7
 grpcio>=1.0.0
-Flask==1.1.2
+Flask==2.2.2
 Flask-Babel==2.0.0
