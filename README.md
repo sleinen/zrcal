@@ -27,9 +27,7 @@ published, and it always takes me some time to get started again.
 ### Update Development Tools
 
 ```bash
-gcloud components app-engine-python
-gcloud components app-engine-python-extras
-gcloud components cloud-datastore-emulator
+gcloud components install app-engine-python app-engine-python-extras cloud-datastore-emulator
 gcloud components update
 ```
 
