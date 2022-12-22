@@ -147,11 +147,21 @@ type_to_id_2022 = dict({
     'gartenabfall':  {'year': 2022},
     'eTram':         {'year': 2022},
     'cargoTram':     {'year': 2022},
-    # 'textilien':     {'year': 2022}, # not found on 27 December 2021... maybe later?
+    # 'textilien':     {'year': 2022}, # no longer exists.
+    #   Textilien has been outsourced to Tell-Tex AG since 2022, I think.
     'sonderabfall':  {'year': 2022},
 })
+type_to_id_2023 = dict({
+    'papier':        {'year': 2023},
+    'kehricht':      {'year': 2023},
+    'karton':        {'year': 2023},
+    'gartenabfall':  {'year': 2023},
+    'eTram':         {'year': 2023},
+    'cargoTram':     {'year': 2023},
+    'sonderabfall':  {'year': 2023},
+})
 
-type_to_id = type_to_id_2022
+type_to_id = type_to_id_2023
 
 known_types = sorted(type_to_id.keys())
 
