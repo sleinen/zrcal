@@ -308,12 +308,24 @@ def month_for_name_de(name):
         return 3
 
 
-def parse_date(date):
+def parse_date(date, yyyy_dd_mm_sometimes=False):
 
     m = re.match(r'^(\d+)-(\d\d)-(\d\d)$', date)
     if m:
-        return datetime.date(int(m.group(1)),
-                             int(m.group(2)), int(m.group(3)))
+        # In the year 2023, the official CSVs were apparently created
+        # using a process that generated dates in YYYY-DD-MM (instead
+        # of YYYY-MM-DD) format, but only in the cases where DD <= 12.
+        # Let's fix this!
+        #
+        if int(m.group(1)) == 2023:
+            yyyy_dd_mm_sometimes=True
+
+        if yyyy_dd_mm_sometimes and int(m.group(3)) <= 12:
+            return datetime.date(int(m.group(1)),
+                                 int(m.group(3)), int(m.group(2)))
+        else:
+            return datetime.date(int(m.group(1)),
+                                 int(m.group(2)), int(m.group(3)))
     m = re.match(r'^(..), (\d+)\. ([A-Z].+) (\d+)$', date)
     if m:
         return datetime.date(int(m.group(4)),
