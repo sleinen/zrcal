@@ -1,6 +1,6 @@
 wheel
 gunicorn
-setuptools==40.8.0
+setuptools==65.5.1
 pytz>=2017.3
 babel>=2.9.0
 googleapis_common_protos
