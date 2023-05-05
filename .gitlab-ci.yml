@@ -32,7 +32,7 @@ build:
 test:
 
   services:
-    - name: $CI_REGISTRY_IMAGE:latest
+    - image: gcr.io/google.com/cloudsdktool/cloud-sdk
       alias: datastore-emulator
       entrypoint: ["gcloud"]
       command: ["beta emulators datastore start"]
