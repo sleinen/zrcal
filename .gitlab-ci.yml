@@ -65,3 +65,6 @@ test:
     - env
     - export DATASTORE_EMULATOR_HOST=datastore-emulator:8081
     - python3 main.py
+  variables:
+    PORT: 8000
+
