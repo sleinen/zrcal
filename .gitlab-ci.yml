@@ -55,8 +55,8 @@ test:
         - start
         - --host-port
         - '[::]:8081'
-
-  stage: test
+      variables:
+        CLOUDSDK_CORE_PROJECT: zrcal
   image:
     name: $CI_REGISTRY_IMAGE:latest
   script:
