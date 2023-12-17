@@ -29,15 +29,35 @@ build:
       - Dockerfile
       - requirements.txt
 
+build_datastore_emulator:
+  stage: build
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
+  script:
+    - mkdir -p /kaniko/.docker
+    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
+    - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile.dse --destination $CI_REGISTRY_IMAGE:dse-latest
+  only:
+    changes:
+      - Dockerfile.dse
+
 test:
 
   services:
-    - image: gcr.io/google.com/cloudsdktool/cloud-sdk
+    - name: $CI_REGISTRY_IMAGE:dse-latest
       alias: datastore-emulator
-      entrypoint: ["gcloud"]
-      command: ["beta emulators datastore start"]
+      command:
+        - gcloud
+        - beta
+        - emulators
+        - datastore
+        - start
+        - --host-port
+        - '0.0.0.0:8081'
+      variables:
+        CLOUDSDK_CORE_PROJECT: zrcal
 
-  stage: test
   image:
     name: $CI_REGISTRY_IMAGE:latest
   script:
@@ -45,3 +65,6 @@ test:
     - env
     - export DATASTORE_EMULATOR_HOST=datastore-emulator:8081
     - python3 main.py
+  variables:
+    PORT: 8000
+
