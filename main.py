@@ -9,6 +9,7 @@ from flask_babel import Babel
 import datetime
 import string
 from urllib.request import urlopen
+from urllib.error import HTTPError
 import re
 import csv
 import codecs
@@ -64,7 +65,10 @@ class Abfuhr(ndb.Model):
         return event
 
 
-type_to_id_2016 = dict({
+THE_YEAR_WHEN_URLS_GOT_STANDARDIZED = 2022
+
+TYPE_TO_ID=dict()
+TYPE_TO_ID[2016] = dict({
     'papier':        '1fdff0f0-d477-4b2e-9997-d26ad36bf079',
     'kehricht':      '875e5ed1-edf4-4b37-bc9f-3c0b7f448155',
     'karton':        'f2701266-d5a6-4278-8a45-c726767a343e',
@@ -75,7 +79,7 @@ type_to_id_2016 = dict({
     'sonderabfall':  '9dcf367d-5bd4-46a9-bee1-03fdf7bc2ac3',
     'sammelstellen': '50527dff-cc1e-403a-8c37-1a8faf731dfb',
 })
-type_to_id_2017 = dict({
+TYPE_TO_ID[2017] = dict({
     'papier':        '049cc13a-d8b1-4ab6-8ccb-1363c1a65026',
     'kehricht':      'c64a9a9a-e09c-4c88-896d-b9580163b704',
     'karton':        'b6a9f085-6434-4ba2-b262-9856a4173ace',
@@ -86,7 +90,7 @@ type_to_id_2017 = dict({
     'sonderabfall':  'cfda766c-e263-479c-8f42-e26b0cf9c9da',
     'sammelstellen': 'c351476a-1101-4f3b-9e91-24c8d6498acb',
 })
-type_to_id_2018 = dict({
+TYPE_TO_ID[2018] = dict({
     'papier':        'c49b791a-cef8-45c9-9f2d-dd3e62e521c9',
     'kehricht':      '2d613f1a-f860-4684-800e-36fc127cd33b',
     'karton':        'd940b125-c8d5-47d9-93ab-1a3c91a65b34',
@@ -98,7 +102,7 @@ type_to_id_2018 = dict({
     'sonderabfall':  '0b8990d1-8732-45c3-b555-79548175870f',
     # 'sammelstellen': '9cc8d403-d13a-4631-84ca-6b76e785c6c6',
 })
-type_to_id_2019 = dict({
+TYPE_TO_ID[2019] = dict({
     'papier':        '87c71720-44a2-4d29-b9b6-961a17b540f6',
     'kehricht':      '29fcecbc-e2dd-44dc-9fb2-b24edd5f8c50',
     'karton':        '47c83f71-29d1-4790-a3de-b29c3de8c35a',
@@ -109,7 +113,7 @@ type_to_id_2019 = dict({
     'sonderabfall':  '53b143a9-5ca0-408a-82e7-e85fe4f8ece3',
     # 'sammelstellen': 'c18dba15-5f57-4a99-a406-92149a5cd508',
 })
-type_to_id_2020 = dict({
+TYPE_TO_ID[2020] = dict({
     'papier':        'eeca6200-7cc1-4f05-af13-fc262b830149',
     'kehricht':      '0d19477d-f7d2-4aec-a96b-5954d380cc79',
     'karton':        '6d28096a-1e04-43ef-8d18-0ce9464a7329',
@@ -120,7 +124,7 @@ type_to_id_2020 = dict({
     'sonderabfall':  'ec7c2ce9-b27f-4c27-bbb8-c9e818d90b07',
     # 'sammelstellen': 'b283fb6a-1ad4-4472-bcf9-0d3f135778b7',
 })
-type_to_id_2021 = dict({
+TYPE_TO_ID[2021] = dict({
     'papier':        ['266fe85f-3ae0-466a-b6f5-2a8e663893cc',
                       'b2db05de-beac-437f-9876-a3d94c3270f0'],
     'kehricht':      ['ddc5c2fd-c730-4d55-a88c-69bbe6d5a37e',
@@ -140,30 +144,18 @@ type_to_id_2021 = dict({
     # 'sammelstellen': ['c6c008f4-67b0-4106-a6f1-a2a61c5f890b',
     #                     '0d59fc55-08df-45ed-a740-a7c4d7b78c2e'],
 })
-type_to_id_2022 = dict({
-    'papier':        {'year': 2022},
-    'kehricht':      {'year': 2022},
-    'karton':        {'year': 2022},
-    'gartenabfall':  {'year': 2022},
-    'eTram':         {'year': 2022},
-    'cargoTram':     {'year': 2022},
-    # 'textilien':     {'year': 2022}, # no longer exists.
-    #   Textilien has been outsourced to Tell-Tex AG since 2022, I think.
-    'sonderabfall':  {'year': 2022},
-})
-type_to_id_2023 = dict({
-    'papier':        {'year': 2023},
-    'kehricht':      {'year': 2023},
-    'karton':        {'year': 2023},
-    'gartenabfall':  {'year': 2023},
-    'eTram':         {'year': 2023},
-    'cargoTram':     {'year': 2023},
-    'sonderabfall':  {'year': 2023},
+TYPE_TO_ID_STANDARDIZED = dict({
+    'papier':        {},
+    'kehricht':      {},
+    'karton':        {},
+    'gartenabfall':  {},
+    'eTram':         {},
+    'cargoTram':     {},
+    #   "textilien" has been outsourced to Tell-Tex AG since 2022
+    'sonderabfall':  {},
 })
 
-type_to_id = type_to_id_2023
-
-known_types = sorted(type_to_id.keys())
+known_types = sorted(TYPE_TO_ID_STANDARDIZED.keys())
 
 
 OGD_ROOT = 'https://data.stadt-zuerich.ch/'
@@ -173,7 +165,11 @@ OGD_TMPL_2 = OGD_BASE + '{}/resource/{}/download/entsorgungskalender_{}.csv'
 OGD_TMPL_3 = OGD_BASE + 'erz_entsorgungskalender_{}/download/entsorgungskalender_{}_{}.csv'
 
 
-def type_to_csv_url(type):
+def type_to_csv_url(type, year):
+    if year >= THE_YEAR_WHEN_URLS_GOT_STANDARDIZED:
+        type_to_id = TYPE_TO_ID_STANDARDIZED
+    else:
+        type_to_id = TYPE_TO_ID[year]
     foo = 'bioabfall' if type == 'gartenabfall' else type
     id = type_to_id[type]
     if isinstance(id, list):
@@ -181,7 +177,7 @@ def type_to_csv_url(type):
             id[0], id[1], foo.lower())
     elif isinstance(id, dict):
         return OGD_TMPL_3.format(
-            foo.lower(), foo, id['year'])
+            foo.lower(), foo, id['year'] if 'year' in id else year)
     else:
         return OGD_TMPL_1.format(
             type, id, foo.lower())
@@ -279,17 +275,28 @@ def load_calendar():
             types = [request.args.get('type')]
         else:
             types = known_types
+    if request.args.get('year'):
+        year = int(request.args.get('year'))
+    else:
+        # Default the year to the year two months from now.
+        # So when this is run in November or December, it will
+        # use the predicted URLs for next year.
+        year = (datetime.date.today() + datetime.timedelta(days=61)).year
+
     for type in types:
         try:
-            parsed = ParsedAbholCSV(type)
+            parsed = ParsedAbholCSV(type, year)
             parsed.store()
 
             result = result + \
                 '<a href="{}">{}</a>: {}<br />\n'.format(
-                    type_to_csv_url(type), type, parsed.size())
+                    type_to_csv_url(type, year), type, parsed.size())
         except KeyError:
-            logging.error("Unknown URL for {}".format(type))
-            result = result + 'Unknown URL for {}'.format(type)
+            logging.error("Unknown URL for {} ({})".format(type, year))
+            result = result + 'Unknown URL for {} ({})'.format(type, year)
+        except HTTPError as e:
+            logging.error("{} trying to get calendar for {} ({})".format(e, type, year))
+            result = result + "{} trying to get calendar for {} ({})".format(e, type, year)
     return result
 
 
@@ -339,7 +346,7 @@ class ParsedAbholCSV:
 
     """A class representing a parsed CSV file"""
 
-    def __init__(self, type, url=None, reader=None):
+    def __init__(self, type, year, url=None, reader=None):
 
         self.month_for_name_de_dict = dict({
             u"Januar":    1,
@@ -363,7 +370,7 @@ class ParsedAbholCSV:
         self.models = []
 
         if url is None:
-            url = type_to_csv_url(type)
+            url = type_to_csv_url(type, year)
         if reader is None:
             logging.warn("Trying to retrieve {}".format(url))
             reader = utf_8_csv_reader(urlopen(url), dialect=csv.excel)
