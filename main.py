@@ -65,122 +65,26 @@ class Abfuhr(ndb.Model):
         return event
 
 
-THE_YEAR_WHEN_URLS_GOT_STANDARDIZED = 2022
-
-TYPE_TO_ID=dict()
-TYPE_TO_ID[2016] = dict({
-    'papier':        '1fdff0f0-d477-4b2e-9997-d26ad36bf079',
-    'kehricht':      '875e5ed1-edf4-4b37-bc9f-3c0b7f448155',
-    'karton':        'f2701266-d5a6-4278-8a45-c726767a343e',
-    'gartenabfall':  '0a54aaf9-3553-4302-a6ff-605889f6e62d',
-    'eTram':         'a12a4f0d-48eb-4bf9-b252-dcc1bf429483',
-    'cargotram':     '25280960-a847-4371-b7c3-0ad651ec8c39',
-    'textilien':     '9c2e8678-9433-4400-96a2-a501e5071601',
-    'sonderabfall':  '9dcf367d-5bd4-46a9-bee1-03fdf7bc2ac3',
-    'sammelstellen': '50527dff-cc1e-403a-8c37-1a8faf731dfb',
-})
-TYPE_TO_ID[2017] = dict({
-    'papier':        '049cc13a-d8b1-4ab6-8ccb-1363c1a65026',
-    'kehricht':      'c64a9a9a-e09c-4c88-896d-b9580163b704',
-    'karton':        'b6a9f085-6434-4ba2-b262-9856a4173ace',
-    'gartenabfall':  '12aa005e-f76f-4b42-a3c5-fd9b24e3824f',
-    'eTram':         'bd648272-dd43-492a-8fff-86c0fe248ae9',
-    'cargotram':     '176073cf-dcd6-4c77-b18a-fc89f955590a',
-    'textilien':     '4d484de2-0e8d-49d4-94b4-afcacdeb5305',
-    'sonderabfall':  'cfda766c-e263-479c-8f42-e26b0cf9c9da',
-    'sammelstellen': 'c351476a-1101-4f3b-9e91-24c8d6498acb',
-})
-TYPE_TO_ID[2018] = dict({
-    'papier':        'c49b791a-cef8-45c9-9f2d-dd3e62e521c9',
-    'kehricht':      '2d613f1a-f860-4684-800e-36fc127cd33b',
-    'karton':        'd940b125-c8d5-47d9-93ab-1a3c91a65b34',
-    # ?? 'gartenabfall':  'cee9cf76-3da3-44d3-bea5-71b3e72aa8f 6',
-    'gartenabfall':   '70f2589d-4db6-443f-bc0b-9dc905f79388',
-    'eTram':         'b7002774-18d6-48fc-970d-1c3a0f53351b',
-    'cargotram':     '27bcc9a4-a0f4-49dc-902a-78496721817d',
-    'textilien':     '3835230a-850b-42b6-868e-c3a4fb1a7401',
-    'sonderabfall':  '0b8990d1-8732-45c3-b555-79548175870f',
-    # 'sammelstellen': '9cc8d403-d13a-4631-84ca-6b76e785c6c6',
-})
-TYPE_TO_ID[2019] = dict({
-    'papier':        '87c71720-44a2-4d29-b9b6-961a17b540f6',
-    'kehricht':      '29fcecbc-e2dd-44dc-9fb2-b24edd5f8c50',
-    'karton':        '47c83f71-29d1-4790-a3de-b29c3de8c35a',
-    'gartenabfall':  '5aa7697a-552e-42cc-a539-4309c5b5ef27',
-    'eTram':         '387d8384-4432-4581-81b1-e4903143696c',
-    'cargotram':     'd2082497-c4db-4e9c-b184-1b18f473abca',
-    'textilien':     '30284fdf-a47c-4054-939a-a627de9ec350',
-    'sonderabfall':  '53b143a9-5ca0-408a-82e7-e85fe4f8ece3',
-    # 'sammelstellen': 'c18dba15-5f57-4a99-a406-92149a5cd508',
-})
-TYPE_TO_ID[2020] = dict({
-    'papier':        'eeca6200-7cc1-4f05-af13-fc262b830149',
-    'kehricht':      '0d19477d-f7d2-4aec-a96b-5954d380cc79',
-    'karton':        '6d28096a-1e04-43ef-8d18-0ce9464a7329',
-    'gartenabfall':  'a0953059-f4e6-4fe5-8db3-a2ccbda884a6',
-    'eTram':         '70aae2a6-e679-48f4-8e69-271adf77def6',
-    'cargotram':     '6b139014-6e97-4316-95f7-2c14702540e7',
-    'textilien':     '9f0efe69-f502-493f-8679-4e162d534439',
-    'sonderabfall':  'ec7c2ce9-b27f-4c27-bbb8-c9e818d90b07',
-    # 'sammelstellen': 'b283fb6a-1ad4-4472-bcf9-0d3f135778b7',
-})
-TYPE_TO_ID[2021] = dict({
-    'papier':        ['266fe85f-3ae0-466a-b6f5-2a8e663893cc',
-                      'b2db05de-beac-437f-9876-a3d94c3270f0'],
-    'kehricht':      ['ddc5c2fd-c730-4d55-a88c-69bbe6d5a37e',
-                      'ded0fe8d-74cc-43dc-aeb0-39ec878e2dbc'],
-    'karton':        ['e8be896b-8aea-40b7-b042-961273576cd3',
-                      '2ae3e825-5b5f-47fd-9838-035f9d625d0e'],
-    'gartenabfall':  ['e785a87c-0233-47e9-9a1a-32034e82f519',
-                      '65c9778f-2d03-4750-839e-730f68b5d00d'],
-    'eTram':         ['88a9bb1b-65db-4b30-a74a-188b0a61b3da',
-                      'e73d06ee-caf0-4057-bc65-41ff99849c8e'],
-    'cargotram':     ['43f4613a-f0c2-4036-8902-77a784bde746',
-                      'fa30c8b4-0478-4c0d-a43d-a9a95bb27e70'],
-    'textilien':     ['a47e92c9-8e0a-454d-8c4e-2e4d7f6c87b3',
-                      '00832eda-1436-4f54-af53-9e1f18fea4a7'],
-    'sonderabfall':  ['2886fe2d-9acf-48c3-8414-d4ee6af7460a',
-                      '8b9bc1df-84fb-47b7-9d2b-b6a1bc1ccc62'],
-    # 'sammelstellen': ['c6c008f4-67b0-4106-a6f1-a2a61c5f890b',
-    #                     '0d59fc55-08df-45ed-a740-a7c4d7b78c2e'],
-})
-TYPE_TO_ID_STANDARDIZED = dict({
-    'papier':        {},
-    'kehricht':      {},
-    'karton':        {},
-    'gartenabfall':  {},
-    'eTram':         {},
-    'cargoTram':     {},
-    #   "textilien" has been outsourced to Tell-Tex AG since 2022
-    'sonderabfall':  {},
-})
-
-known_types = sorted(TYPE_TO_ID_STANDARDIZED.keys())
+KNOWN_TYPES = [
+    'papier',
+    'kehricht',
+    'karton',
+    'bioabfall',
+    'eTram',
+    'cargoTram',
+    'sonderabfall',
+    'mobiler_recyclinghof',     # starting in 2024
+]
 
 
 OGD_ROOT = 'https://data.stadt-zuerich.ch/'
-OGD_BASE = OGD_ROOT + 'dataset/'
-OGD_TMPL_1 = OGD_BASE + 'entsorgungskalender_{}/resource/{}/download/{}.csv'
-OGD_TMPL_2 = OGD_BASE + '{}/resource/{}/download/entsorgungskalender_{}.csv'
-OGD_TMPL_3 = OGD_BASE + 'erz_entsorgungskalender_{}/download/entsorgungskalender_{}_{}.csv'
+OGD_TMPL = OGD_ROOT + 'dataset/erz_{}{}/download/{}{}_{}.csv'
 
 
 def type_to_csv_url(type, year):
-    if year >= THE_YEAR_WHEN_URLS_GOT_STANDARDIZED:
-        type_to_id = TYPE_TO_ID_STANDARDIZED
-    else:
-        type_to_id = TYPE_TO_ID[year]
-    foo = 'bioabfall' if type == 'gartenabfall' else type
-    id = type_to_id[type]
-    if isinstance(id, list):
-        return OGD_TMPL_2.format(
-            id[0], id[1], foo.lower())
-    elif isinstance(id, dict):
-        return OGD_TMPL_3.format(
-            foo.lower(), foo, id['year'] if 'year' in id else year)
-    else:
-        return OGD_TMPL_1.format(
-            type, id, foo.lower())
+    e1 = "entsorgungskalender_"
+    e2 = "" if type == "mobiler_recyclinghof" else "entsorgungskalender_"
+    return OGD_TMPL.format(e1, type.lower(), e2, type, year)
 
 
 @app.route('/')
@@ -236,7 +140,7 @@ def get_cal(zip=None, types=None):
         if request.args.get('types'):
             types = request.args.get('types').split(' ')
         else:
-            types = known_types
+            types = KNOWN_TYPES
     else:
         types = types.split('+')
     if zip is None:
@@ -274,7 +178,7 @@ def load_calendar():
         if request.args.get('type'):
             types = [request.args.get('type')]
         else:
-            types = known_types
+            types = KNOWN_TYPES
     if request.args.get('year'):
         year = int(request.args.get('year'))
     else:
