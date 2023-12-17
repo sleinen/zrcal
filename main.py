@@ -24,7 +24,7 @@ ZIPS = [8001, 8002, 8003, 8004, 8005, 8006, 8008,
         8047, 8048, 8049, 8050, 8051, 8052, 8053,
         8055, 8057, 8064]
 
-GA_ID = 'UA-33259788-1'
+GTAG = 'G-23BCR3VD48'
 GOOGLE_AD_CLIENT = 'pub-6118177449333262'
 
 app = Flask(__name__)
@@ -91,7 +91,7 @@ def type_to_csv_url(type, year):
 def get_index():
     return render_template('index.html',
                            zips=ZIPS,
-                           ga_id=GA_ID,
+                           gtag=GTAG,
                            google_ad_client=GOOGLE_AD_CLIENT)
 
 
@@ -115,6 +115,11 @@ def get_robots(): return Response('#\n', mimetype='text/plain')
 def get_favicon(path=None):
     return send_file('static/images/favicon.ico',
                      mimetype='image/vnd.microsoft.icon')
+
+
+@app.route('/ads.txt')
+def get_ads_txt(path=None):
+    return send_file('static/ads.txt', mimetype='text/plain')
 
 
 def cal_add_name(cal, name, req):
