@@ -6,18 +6,16 @@
     <meta charset="utf-8" />
     <link rel="stylesheet" type="text/css" href="/css/default.css" />
     <title>{% block title %}{% endblock %}</title>
-    {% if ga_id != None: %}
-    <script type="text/javascript">
-      var _gaq = _gaq || [];
-      _gaq.push(['_setAccount', '{{ ga_id }}']);
-      _gaq.push(['_trackPageview']);
+    {% if gtag != None: %}
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id={{ gtag }}"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
 
-      (function() {
-        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-      })();
-    </script>
+  gtag('config', '{{ gtag }}');
+</script>
     {% endif %}
     {% endblock %}
 </head>
@@ -25,7 +23,7 @@
     <div id="content">{% block content %}{% endblock %}</div>
 {% if google_ad_client != None %}
     </div id="footer_ad">
-<script data-ad-client="ca-{{ google_ad_client }}" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-{{ google_ad_client }}" crossorigin="anonymous"></script>
     </div>
 {% endif %}
     <div id="footer">
