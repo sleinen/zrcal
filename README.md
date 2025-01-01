@@ -90,5 +90,6 @@ Confirm that you would like to upload the latest source code as the
 "default" application.  The upload process takes a while, but then the
 new code should become active pretty much instantly.
 
-You should be able to (re)load the latest data by probing
-[http://zrcal.leinen.ch/load-calendar](http://zrcal.leinen.ch/load-calendar).
+You should be able to (re)load the latest data by probing the
+`/load-calendar` path under
+[http://zrcal.leinen.ch/](http://zrcal.leinen.ch/).
