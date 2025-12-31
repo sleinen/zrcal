@@ -13,7 +13,7 @@ in common calendar tools.
 This application can be deployed on Google App Engine.  See below for
 instructions.
 
-Copyright (c) Simon Leinen, 2012 - 2020
+Copyright (c) Simon Leinen, 2012 - 2025
 
 This program is released as free software under the GNU Affero General
 Public License.  See file `COPYING' for the licensing conditions.
