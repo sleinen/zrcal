@@ -10,6 +10,7 @@ import datetime
 import string
 from urllib.request import urlopen
 from urllib.error import HTTPError
+import ssl
 import re
 import csv
 import codecs
@@ -183,6 +184,8 @@ def get_cal(zip=None, types=None):
 
 @app.route('/load-calendar')
 def load_calendar():
+    if request.args.get('insecure'):
+        ssl._create_default_https_context = ssl._create_unverified_context
     result = ''
     if request.args.get('types'):
         types = request.args.get('types').split(' ')

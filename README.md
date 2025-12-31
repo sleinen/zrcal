@@ -73,6 +73,10 @@ case you need to fix/update the code.  Maybe it's because the nice
 folks at Zurich Open Government Data have changed the URL format
 again.
 
+If you get a Python backtrace showing a certificate validation error
+(i.e. containing `ssl.SSLCertVerificationError:`), you can retry with
+`?insecure=1` appended to the URL.
+
 ### Play Around a Bit
 
 In particular, load a random recycling calendar,
