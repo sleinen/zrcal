@@ -70,8 +70,11 @@ KNOWN_TYPES = [
     'kehricht',
     'karton',
     'bioabfall',
-    'eTram',
-    'cargoTram',
+    # Not directly useful from 2026 on.
+    # There is now a combined calendar for Cargo and E-Tram,
+    # but I haven't understood its format yet.
+    # 'eTram',
+    # 'cargoTram',
     'sonderabfall',
     'mobiler_recyclinghof',     # starting in 2024
 ]
@@ -79,12 +82,16 @@ KNOWN_TYPES = [
 
 OGD_ROOT = 'https://data.stadt-zuerich.ch/'
 OGD_TMPL = OGD_ROOT + 'dataset/erz_{}{}/download/{}{}_{}.csv'
+OGD_TMPL_2026 = OGD_ROOT + 'dataset/{}{}/download/{}{}_{}.csv'
 
 
 def type_to_csv_url(type, year):
     e1 = "entsorgungskalender_"
     e2 = "" if type == "mobiler_recyclinghof" else "entsorgungskalender_"
-    return OGD_TMPL.format(e1, type.lower(), e2, type, year)
+    if year >= 2026:
+        return OGD_TMPL_2026.format(e1, type.lower(), e2, type, year)
+    else:
+        return OGD_TMPL.format(e1, type.lower(), e2, type, year)
 
 
 @app.route('/')
