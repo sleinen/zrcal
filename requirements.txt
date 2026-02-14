@@ -5,7 +5,7 @@ pytz>=2017.3
 babel==2.17.0
 googleapis_common_protos
 google-cloud-ndb==2.4.0
-protobuf==6.33.2
+protobuf==6.33.5
 icalendar==6.3.2
 grpcio==1.76.0
 Werkzeug==3.1.5
