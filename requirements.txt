@@ -1,6 +1,6 @@
 wheel==0.46.3
 gunicorn==25.3.0
-setuptools==82.0.1
+setuptools==83.0.0
 babel==2.18.0
 googleapis_common_protos==1.73.1
 google-cloud-ndb==2.4.2
